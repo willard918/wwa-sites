@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data/
+migration/
+*.log
+*.key
+*.pem
+.env
+letters*.json
+mailmerge*.csv

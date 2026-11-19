@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Willard Williams Architect | Precision, at home</title>
+<meta name="description" content="Architect-designed prefabricated ADUs for Oregon, Washington and California, built from numbered factory wall panels.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0a08;--bg2:#12100d;--ink:#f1ece1;--muted:#8f897b;--line:#26231d;--accent:#c8553a}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:300 16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:300;line-height:1.02;letter-spacing:-.02em}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+section{padding:120px 0;border-top:1px solid var(--line)}
+.eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:22px}
+h2{font-size:clamp(34px,5.5vw,64px);max-width:14em;margin-bottom:24px}
+.lead{color:var(--muted);font-size:18px;max-width:560px}
+.btn{display:inline-block;background:var(--ink);color:var(--bg);padding:16px 30px;font:500 13px/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;border:0;cursor:pointer}
+.btn:hover{background:var(--accent);color:#fff}
+.btn.ghost{background:none;color:var(--ink);border:1px solid #4a463c}
+.btn.ghost:hover{border-color:var(--ink);background:none;color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(rgba(11,10,8,.94),rgba(11,10,8,.72));backdrop-filter:blur(8px)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:76px}
+.logo{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:400}
+.links{display:flex;gap:34px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.links a:hover{color:var(--ink)}
+@media(max-width:760px){.links a:not(:last-child){display:none}.logo{font-size:11px;letter-spacing:.14em;white-space:nowrap}nav .wrap{height:64px}}
+
+.hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;padding:140px 0 90px;border:0;overflow:hidden}
+.herobg{position:absolute;inset:0;background:radial-gradient(1100px 600px at 78% 20%,#2c2218 0%,transparent 70%) var(--bg);background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s}
+.herobg.on{opacity:1}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,8,.92) 0%,rgba(11,10,8,.55) 42%,rgba(11,10,8,0) 72%),linear-gradient(0deg,rgba(11,10,8,.85) 0%,rgba(11,10,8,0) 40%)}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.hero h1{font-size:clamp(56px,11vw,150px);margin-bottom:34px}
+.hero p{color:#aaa393;font-size:18px;max-width:520px;margin-bottom:38px}
+.check{display:flex;max-width:640px;border:1px solid #4a463c;background:rgba(11,10,8,.6);backdrop-filter:blur(6px)}
+.check input{flex:1;min-width:0;border:0;padding:20px 22px;font:inherit;background:transparent;color:var(--ink)}
+.check input::placeholder{color:#7a7467}
+.check .btn{padding:0 30px}
+@media(max-width:520px){.check{flex-direction:column}.check input{padding:18px 18px}.check .btn{padding:18px 0}}
+#result{display:none;max-width:640px;margin-top:14px;padding:16px 20px;border-left:2px solid var(--accent);background:var(--bg2);color:var(--muted);font-size:14px}
+/*LOTCHECK_CSS*/
+@media(max-width:760px){.hero::after{background:linear-gradient(0deg,rgba(11,10,8,.95) 0%,rgba(11,10,8,.6) 55%,rgba(11,10,8,.15) 100%)}.herobg{background-position:62% 20%}}
+
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border-top:1px solid var(--line)}
+.num{padding:46px 24px 46px 0}
+.num b{display:block;font:300 clamp(40px,6vw,72px)/1 Fraunces,serif;letter-spacing:-.03em}
+.num span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+.model{display:grid;grid-template-columns:1.25fr 1fr;gap:56px;align-items:center;padding:64px 0;border-top:1px solid var(--line)}
+.models{margin-top:46px}
+.model .img{aspect-ratio:16/10;background:linear-gradient(135deg,#17140f,#1d1912);border:1px solid var(--line);overflow:hidden}
+.model .img img{width:100%;height:100%;object-fit:cover;display:block}
+.model h3{font-size:clamp(40px,5vw,64px);margin-bottom:4px}
+.model .sub{color:var(--muted);margin-bottom:28px}
+.spec{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:30px}
+.spec b{display:block;font:300 28px/1.1 Fraunces,serif}
+.spec span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.model button.more{font:400 12px Inter,sans-serif;letter-spacing:.18em;text-transform:uppercase;border:0;border-bottom:1px solid var(--accent);padding:0 0 4px;background:none;color:var(--ink);cursor:pointer}
+@media(max-width:820px){.model{grid-template-columns:1fr;gap:26px;padding:44px 0}}
+
+/* library */
+.lib-filter{display:flex;flex-wrap:wrap;gap:8px;margin:36px 0 30px}
+.lib-filter button{font:400 11px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;padding:10px 16px;border:1px solid #3a362e;background:none;color:var(--muted);cursor:pointer}
+.lib-filter button[aria-pressed=true]{color:var(--bg);background:var(--ink);border-color:var(--ink)}
+.lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.lc{cursor:pointer;position:relative;border:1px solid var(--line);background:var(--bg2);overflow:hidden;transition:border-color .3s,transform .5s}
+.lc:hover,.lc:focus-visible{border-color:#5a5547}
+.lc.big{grid-column:span 2}
+.lc-img{aspect-ratio:16/10;background:linear-gradient(110deg,#14110d 30%,#1d1a14 50%,#14110d 70%);background-size:200% 100%;animation:shim 2.4s linear infinite;overflow:hidden}
+.lc.big .lc-img{aspect-ratio:2/0.78}
+.lc-img img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .9s,transform 1.2s cubic-bezier(.2,.7,.2,1);animation:none}
+.lc-img.ready{animation:none;background:#0d0b09}.lc-img.ready img{opacity:1}
+.lc:hover .lc-img img{transform:scale(1.045)}
+@keyframes shim{to{background-position:-200% 0}}
+.lc-t{padding:18px 20px 20px;display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap}
+.lc-t h3{font-size:24px}.lc-t span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.lc-by{position:absolute;top:12px;left:12px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;background:rgba(11,10,8,.7);backdrop-filter:blur(6px);padding:5px 9px;color:#c9c2b2}
+.lib-note{margin-top:34px;font-size:12px;color:#6f6a5e;max-width:760px}
+@media(max-width:980px){.lib-grid{grid-template-columns:repeat(2,1fr)}.lc.big{grid-column:span 2}}
+@media(max-width:620px){.lib-grid{grid-template-columns:1fr}.lc.big{grid-column:auto}.lc.big .lc-img{aspect-ratio:16/10}}
+.libv{position:fixed;inset:0;z-index:40;background:#080706;display:none;grid-template-columns:minmax(0,1fr) 440px;overflow:hidden}
+.libv.on{display:grid}
+.lv-st{position:relative;min-height:0}
+.lv-st canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+.lv-x{position:absolute;top:18px;left:18px;z-index:3;font:400 11px Inter,sans-serif;letter-spacing:.18em;text-transform:uppercase;padding:11px 16px;border:1px solid #4a463c;background:rgba(11,10,8,.72);backdrop-filter:blur(6px);color:var(--ink);cursor:pointer}
+.lv-chips{position:absolute;left:18px;bottom:18px;z-index:3;display:flex;gap:8px;flex-wrap:wrap}
+.lv-hint{position:absolute;right:18px;bottom:20px;z-index:3;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6f6a5e;pointer-events:none}
+.lv-side{overflow:auto;padding:34px 32px 40px;border-left:1px solid var(--line);background:var(--bg)}
+.lv-side h3{font-size:clamp(32px,3.4vw,46px);margin-bottom:6px}
+.lv-sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+.lv-spec{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
+.lv-spec b{display:block;font:300 28px/1.1 Fraunces,serif}.lv-spec span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.lv-tabs{display:flex;gap:8px;margin-bottom:10px}
+.lib-plan{width:100%;height:auto;display:block;background:#0f0d0a;border:1px solid var(--line);margin-bottom:8px}
+.lv-cred{font-size:12px;color:#6f6a5e;margin:6px 0 26px}
+.tz{border-top:1px solid var(--line);padding-top:24px}
+.tz-l{display:block;font:300 28px/1.1 Fraunces,serif;margin-bottom:8px}
+.tz-p{font-size:14px;color:var(--muted);margin-bottom:16px}
+.tz-r{display:flex;border:1px solid #4a463c;margin-bottom:10px}
+.tz-r input,.tz-a{flex:1;min-width:0;border:0;padding:15px 16px;font:inherit;font-size:15px;background:transparent;color:var(--ink)}
+.tz-a{width:100%;border:1px solid #4a463c;margin-bottom:12px;display:block}
+.tz-r .btn{padding:0 20px;font-size:12px}
+.tz-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.tz-c{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted)}.tz-c input{margin-top:4px}
+.tz-m{font-size:14px;margin-top:12px}.tz-m.ok{color:#9ccf9c}.tz-m.bad{color:#e07a5f}
+@media(max-width:900px){.libv{grid-template-columns:1fr;grid-template-rows:56vh 1fr}.lv-side{border-left:0;border-top:1px solid var(--line);padding:24px 20px 40px}.lv-hint{display:none}}
+
+.conf{background:var(--bg2)}
+.cwin{display:grid;grid-template-columns:1.7fr 1fr;border:1px solid var(--line);margin-top:48px;background:var(--bg)}
+.cview{position:sticky;top:72px;align-self:start;height:min(82vh,700px);min-height:460px}
+.cview canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.cview .hint{position:absolute;left:18px;bottom:14px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6f6a5d;pointer-events:none}
+.cview .hint2{position:absolute;right:18px;top:14px;font:400 12px/1.2 Fraunces,serif;color:#a49d8c;pointer-events:none;text-align:right}
+.cpanel{padding:30px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:22px}
+.grp>label,.grp>.lab{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.grp>label output{color:var(--ink);letter-spacing:.06em}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:400 12px Inter,sans-serif;letter-spacing:.08em;padding:10px 14px;background:none;color:var(--muted);border:1px solid #3a362e;cursor:pointer}
+.chip[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}
+.sw{width:34px;height:34px;padding:0;border:1px solid #3a362e;cursor:pointer}
+.sw[aria-pressed=true]{outline:1px solid var(--ink);outline-offset:3px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.stat{background:var(--bg);padding:14px}
+.stat b{display:block;font:300 26px/1.1 Fraunces,serif}
+.stat span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.price{border-top:1px solid var(--line);padding-top:18px}
+.price small{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block}
+.price b{font:300 34px/1.2 Fraunces,serif}
+.parts{margin:0 0 14px}.parts div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.parts span{color:var(--muted)}.parts b{font-weight:400}
+.playbtn{position:absolute;right:18px;bottom:14px;z-index:3;background:rgba(11,10,8,.72);backdrop-filter:blur(6px);color:var(--ink);border:1px solid #4a463c;padding:11px 18px;font:500 11px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}.playbtn:hover{border-color:var(--accent)}
+.lgwrap{display:grid;grid-template-columns:minmax(260px,1fr) 1.2fr;gap:48px;margin-top:40px;align-items:start}
+.lg3d{width:100%;height:540px;display:block;background:#0e0d0b;border:1px solid var(--line);cursor:grab}
+@media(max-width:900px){.lg3d{height:380px}}
+.lg-lot{fill:#12110e;stroke:#6b6557;stroke-width:.3}.lg-set{fill:none;stroke:#6b6557;stroke-width:.15;stroke-dasharray:1 .8}.lg-street{fill:#232220}.lg-drive{fill:#1c1b18}.lg-house{fill:#25231f;stroke:#4a463c;stroke-width:.2}
+.lg-truck{fill:#8a8472}.lg-cab{fill:#c8553a}.lg-crane{fill:#b07a1c}.lg-boom{stroke:#d0a24a;stroke-width:.4}.lg-swing{fill:rgba(208,138,58,.06);stroke:#d08a3a;stroke-width:.2;stroke-dasharray:1.2 .8}
+.lg-unit{fill:rgba(217,210,195,.14);stroke:#d9d2c3;stroke-width:.4}.lg-deck{fill:none;stroke:#8a8372;stroke-width:.15;stroke-dasharray:.8 .6}.lg-util{fill:none;stroke:#8fb4c8;stroke-width:.2;stroke-dasharray:.8 .6}
+.lg-t{font:500 1.9px Inter,sans-serif;fill:#a9a291;letter-spacing:.1px}.lg-t.sm{font-size:1.5px;fill:#8a8372}
+.lgcap{font-size:12px;color:var(--muted);margin:10px 0 0}.lgsteps{padding-left:20px;margin:0 0 22px}.lgsteps li{margin:0 0 12px;color:#cfc8b8;line-height:1.55}.lgsteps b{color:var(--ink);font-weight:500}
+.lgcheck small{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}.lgcheck ul{margin:0;padding-left:18px;color:#a9a291;font-size:14px;line-height:1.55}.lgtext h3{font:300 28px/1.2 Fraunces,serif;margin:0 0 16px}
+@media(max-width:900px){.lgwrap{grid-template-columns:1fr;gap:28px}}
+.fplan{width:100%;height:auto;display:block;overflow:visible}
+.fp-floor{fill:rgba(255,255,255,.035)}.fp-deck{fill:none;stroke:#6b6557;stroke-width:.12;stroke-dasharray:.5 .4}
+.fp-wall{fill:#d9d2c3}.fp-int{stroke:#d9d2c3;stroke-width:.36}.fp-open{fill:var(--bg,#0b0a08)}.fp-glass{stroke:#8fb4c8;stroke-width:.1}
+.fp-leaf{fill:none}.fp-swing{fill:none;stroke:#8a8372;stroke-width:.08}.fp-leaf{stroke:#d9d2c3;stroke-width:.14}
+.fp-fix{fill:none;stroke:#a39b88;stroke-width:.1}.fp-fix2{fill:none;stroke:#7f7869;stroke-width:.08}
+.fp-it rect,.fp-it circle,.fp-it ellipse{fill:rgba(255,255,255,.04);stroke:#9a937f;stroke-width:.09}.fp-it .fp-d2,.fp-it line.fp-d2{fill:none;stroke:#6f695b;stroke-width:.07}.fp-it .fp-t{font:500 .5px Inter,sans-serif;fill:#6f695b;stroke:none}
+.perf{font-size:12px;line-height:1.45}.pf-sum{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}.pf-sum b{font:300 44px/1 Fraunces,serif;color:#a8c9a0}.pf-sum span{color:#a9a291}
+.pf-nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}.pf-nums small{display:block!important;font-size:9px!important;letter-spacing:.12em!important;margin-bottom:3px!important}.pf-nums b{display:block;font:400 18px Fraunces,serif;color:#e8e1d2}.pf-nums i{font:400 10px Inter,sans-serif;font-style:normal;color:#8a8372}.pf-nums em{font-style:normal;color:#6f695b;font-size:11px}
+.pf-t .pf-h,.pf-t .pf-r{display:grid;grid-template-columns:78px 1fr 1fr;gap:10px;padding:6px 0;border-top:1px solid #1f1c17}.pf-h{font:500 9px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a8372}.pf-r span:first-child{color:#c9c2b2}.pf-r span{color:#8a8372}.pf-r .hi{color:#d9d2c3}.pf-h .hi{color:#a8c9a0}
+.pf-fine{font-size:11px;color:#6f695b;margin-top:10px}
+@media(max-width:520px){.pf-nums{grid-template-columns:1fr}.pf-t .pf-h{display:none}.pf-t .pf-r{grid-template-columns:1fr}.pf-r span:nth-child(2)::before{content:"Code: ";color:#6f695b}.pf-r .hi::before{content:"Ours: ";color:#a8c9a0}}
+.fp-fade{opacity:.22}.mep polyline{fill:none;stroke-linejoin:round}.mep-pwr{stroke:#ffc94a;stroke-width:.14}.mep-data{stroke:#5ee08a;stroke-width:.1}.mep-cold{stroke:#4aa8ff;stroke-width:.12}.mep-hot{stroke:#ff7a4a;stroke-width:.12}.mep-drain{stroke:#b8925e;stroke-width:.26;stroke-dasharray:.7 .35}.mep-ref{stroke:#ff5fd0;stroke-width:.1}.mep-air{stroke:#8fd3d8;stroke-width:.3;opacity:.55}.mep-tray{stroke:#2a2620;stroke-width:.7}.mep .thin{stroke-width:.07}
+.mep-jb{fill:#0b0a08;stroke:#ffc94a;stroke-width:.08}.mep-hatch{fill:rgba(255,255,255,.04);stroke:#d9d2c3;stroke-width:.06}.mep-acc{fill:rgba(217,210,195,.35);stroke:#d9d2c3;stroke-width:.06}.mep-leak{fill:#0b0a08;stroke:#5ee0d0;stroke-width:.08}
+.mep-eq{fill:rgba(11,10,8,.9);stroke-width:.1}.mep-eq.hot{stroke:#ff7a4a}.mep-eq.pwr{stroke:#ffc94a}.mep-eq.data{stroke:#5ee08a}.mep-eq.air{stroke:#8fd3d8}.mep-eq.ref{stroke:#ff5fd0}.mep-eq.drain{stroke:#b8925e}.mep-t{font:500 .5px Inter,sans-serif;fill:#c9c2b2;stroke:none}
+.mepx{margin-top:16px;font-size:12px;line-height:1.45}.mepx small{display:block;text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--muted);margin-bottom:8px}.mep-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:10px;color:#a9a291;font-size:11px}.mep-leg span{display:inline-flex;align-items:center;gap:6px}.mep-leg i{width:14px;height:3px;display:inline-block}.mep-leg i.acc{height:8px;background:rgba(217,210,195,.35);border:1px solid #d9d2c3}.mep-leg i.lk{height:8px;width:8px;border-radius:50%;border:1px solid #5ee0d0}
+.mep-notes p{margin:8px 0;color:#8a8372}.mep-notes b{color:#c9c2b2;font-weight:500}
+.ccheck{margin-top:16px;font-size:12px;line-height:1.45}.ccheck small{display:block;text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--mut,#8a8372);margin-bottom:8px}
+.cc-sum{padding:8px 10px;border:1px solid #3a352c;margin-bottom:10px;font-size:12px}.cc-sum.good{color:#a8c9a0}.cc-sum.bad{color:#e08a6a;border-color:#7a4a3a}
+.cc-g{margin:0 0 10px}.cc-g>b{display:block;font:500 10px Inter,sans-serif;letter-spacing:.14em;color:#a9a291;margin-bottom:3px}
+.cc-r{display:grid;grid-template-columns:14px 1fr;gap:0 6px;padding:4px 0;border-top:1px solid #1f1c17}.cc-r .cc-i{grid-row:span 3;font-weight:600}.cc-r.ok .cc-i{color:#8fb88a}.cc-r.fail .cc-i{color:#e07a5a}.cc-r.check .cc-i{color:#d6b25e}
+.cc-n{color:#d9d2c3}.cc-v{color:#a9a291}.cc-q{color:#6f695b;font-size:11px}
+.cc-notes p{margin:8px 0;color:#8a8372}.cc-notes b{color:#c9c2b2;font-weight:500}.cc-src{font-size:11px;color:#6f695b!important}
+.fp-room{font:500 .85px Inter,sans-serif;letter-spacing:.06px;fill:#a9a291}.fp-room.sm{font-size:.7px}.fp-sf{font:400 .65px Inter,sans-serif;fill:#6f695b}
+.fp-dim line{stroke:#6f695b;stroke-width:.08}.fp-dim text{font:400 .75px Inter,sans-serif;fill:#8a8372}
+.cplan{border-top:1px solid var(--line);padding-top:14px}.cplan small{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+.lplan{max-width:260px;margin:14px 0 18px}
+.price .big{display:block}.price .rng{font-size:13px;color:var(--muted);margin:2px 0 12px}
+.tiers{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.tnote{font-size:13px;color:var(--muted);margin:0 0 14px;min-height:2.6em}
+.fin{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0 8px}.fin label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block}
+.fin input{width:100%;margin-top:4px;background:transparent;border:1px solid var(--line);color:var(--ink);padding:8px;font:inherit}
+.mo{font:300 24px/1.2 Fraunces,serif}.fine{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}
+#errors{display:none;font-size:13px;color:#e29a86;border-left:2px solid var(--accent);padding:8px 12px;background:rgba(200,85,58,.08)}
+.dl{font-size:11px;color:var(--muted)}
+.dl button{background:none;border:0;border-bottom:1px solid #4a463c;color:var(--ink);font:inherit;cursor:pointer;padding:0}
+@media(max-width:900px){.cwin{grid-template-columns:1fr}.cview{position:relative;top:0;height:420px;min-height:380px}.cpanel{border-left:0;border-top:1px solid var(--line)}}
+
+.eng{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.eng svg{width:100%;height:auto;background:var(--bg2);border:1px solid var(--line)}
+.eng ul{list-style:none;padding:0;margin-top:28px}
+.eng li{padding:14px 0;border-top:1px solid var(--line);color:var(--muted);font-size:15px}
+.eng li b{color:var(--ink);font-weight:400}
+@media(max-width:820px){.eng{grid-template-columns:1fr;gap:36px}}
+
+.ways{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:48px;border-top:1px solid var(--line)}
+.way{padding:36px 32px 36px 0;border-bottom:1px solid var(--line)}
+.way small{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.way h3{font-size:30px;margin:12px 0 10px}
+.way p{color:var(--muted);font-size:15px;max-width:300px}
+.brands{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:36px;margin-top:48px}
+.brands div{border-top:1px solid var(--accent);padding-top:18px}
+.brands h3{font-size:24px;margin-bottom:6px}
+.brands p{color:var(--muted);font-size:15px}
+footer{padding:60px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+footer .cols{display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+footer strong{display:block;color:var(--ink);font-weight:400;margin-bottom:6px}
+.note{margin-top:34px;font-size:11px;color:#5d5849}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#top">Willard Williams Architect</a>
+  <div class="links"><a href="#lineup">Lineup</a><!--LIBNAV--><a href="#library">Library</a><!--/LIBNAV--><a href="#configure">Configure</a><a href="#engineering">Engineering</a><a href="#ways">Ways to build</a><a href="#studio">Studio</a><a href="#resources">References</a><a href="#contact">Contact</a></div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="herobg" id="herobg"></div>
+  <div class="wrap">
+    <div class="eyebrow">Prefabricated ADUs &middot; Oregon &middot; Washington &middot; California</div>
+    <h1>Precision,<br>at home.</h1>
+    <p class="uses" style="font-size:19px;letter-spacing:.01em;color:#f1ece1;margin-bottom:10px">Rent it out. House family. Work from home.</p>
+    <p>Architect-designed. Built from factory panels. Tell us where you want to build and we'll tell you what's possible and who builds it. <a href="#configure" style="text-decoration:underline">Design your unit, then request a quote.</a></p>
+    <form class="check" id="lotform">
+      <input id="addr" placeholder="Enter your property address" aria-label="Property address" autocomplete="street-address">
+      <button class="btn" type="submit">Check my lot</button>
+    </form>
+    <div id="result" role="status"></div>
+  </div>
+</header>
+
+<div class="wrap"><div class="nums">
+  <div class="num"><b>R-30</b><span>Insulated wall assembly</span></div>
+  <div class="num"><b>16&Prime;</b><span>Stud spacing, on center</span></div>
+  <div class="num"><b>20+</b><span>Years of architecture</span></div>
+  <div class="num"><b>3</b><span>States served</span></div>
+</div></div>
+
+<section id="lineup"><div class="wrap">
+  <div class="eyebrow">The lineup</div>
+  <h2>One system. Three sizes.</h2>
+  <p class="lead">Every model shares the same panel rules, the same details and the same standards. Choose the footprint that fits your lot.</p>
+  <div class="models" id="models">
+    <article class="model" data-model="PL 384"><div class="img"></div><div><h3>PL 384</h3><div class="sub">Studio</div><div class="spec"></div><div class="lplan"></div><button class="more" type="button">Configure</button></div></article>
+    <article class="model" data-model="PL 576"><div class="img"></div><div><h3>PL 576</h3><div class="sub">One bedroom</div><div class="spec"></div><div class="lplan"></div><button class="more" type="button">Configure</button></div></article>
+    <article class="model" data-model="PL 768"><div class="img"></div><div><h3>PL 768</h3><div class="sub">Two bedroom</div><div class="spec"></div><div class="lplan"></div><button class="more" type="button">Configure</button></div></article>
+  </div>
+</div></section>
+
+<!--LIBRARY--><section id="library"><div class="wrap">
+  <div class="eyebrow">The library</div>
+  <h2>Eighteen ways to live small.</h2>
+  <p class="lead">Reference designs, modelled in 3D from published plans: studios to two-storey cottages. Open one to walk around it, read its plan, and keep a copy.</p>
+  <div class="lib-filter" id="lib-filter" role="group" aria-label="Filter the library"></div>
+  <div class="lib-grid" id="lib-grid"></div>
+  <p class="lib-note">These are redrawn reference designs by the architects credited on each card (most are Seattle pre-approved DADU plans), shown here as inspiration and as a way to talk about what you want. They are not Pacific Living Solutions models, and sizes are taken from the drawings.</p>
+</div></section>
+
+<div class="libv" id="libv" role="dialog" aria-modal="true" aria-label="Design viewer">
+  <div class="lv-st"><canvas id="lv-cv"></canvas>
+    <button class="lv-x" id="lv-x" type="button">&larr; Library</button>
+    <div class="lv-chips" id="lv-chips"></div><div class="lv-hint">Drag to look around</div></div>
+  <aside class="lv-side"><h3 id="lv-name"></h3><div class="lv-sub" id="lv-sub"></div><div class="lv-spec" id="lv-spec"></div>
+    <div class="lv-tabs" id="lv-tabs"></div><div id="lv-plan"></div><p class="lv-cred" id="lv-cred"></p><div id="lv-tz"></div></aside>
+</div>
+
+<!--/LIBRARY-->
+<section class="conf" id="configure"><div class="wrap">
+  <div class="eyebrow">Configure</div>
+  <h2>Build yours. Turn it around.</h2>
+  <p class="lead">Choose a model, roof, size and finish. The model, the panel count and the quantities update as you go. Drag to look around.</p>
+  <div class="cwin">
+    <div class="cview">
+      <canvas id="stage" aria-label="Interactive 3D model of the unit"></canvas>
+      <div class="hint">Drag to orbit</div>
+      <div class="hint2" id="dims"></div>
+      <button type="button" class="playbtn" id="play">▶ Watch it go up</button>
+    </div>
+    <div class="cpanel">
+      <div class="grp"><div class="lab">Model</div><div class="chips" id="c-model"></div></div>
+      <div class="grp"><div class="lab">Roof</div><div class="chips" id="c-roof"></div></div>
+      <div class="grp"><label for="r-w">Width <output id="o-w"></output></label><input id="r-w" type="range" min="24" max="40" step="4"></div>
+      <div class="grp"><label for="r-d">Depth <output id="o-d"></output></label><input id="r-d" type="range" min="16" max="28" step="4"></div>
+      <div class="grp"><div class="lab">Front door</div><div class="chips" id="c-door"></div></div>
+      <div class="grp"><div class="lab">Performance</div><div class="chips" id="c-perf"></div></div>
+      <div class="grp"><div class="lab">Finish</div><div class="chips" id="c-fin"></div></div>
+      <div class="grp"><div class="lab">View</div><div class="chips" id="c-view"></div></div>
+      <div id="errors" role="alert"></div>
+      <div class="stats" id="stats"></div>
+      <div class="cplan"><small>Floor plan</small><div id="plan"></div></div>
+      <div class="cplan"><small>Energy performance</small><div id="perfbox"></div></div>
+      <div class="price"><small>Pricing</small>
+        <p class="tnote" style="margin:8px 0 14px">Cost depends on your site, utilities and how much of the work you want us to take on. Send us this configuration and we'll come back with a written quote.</p>
+        <a class="btn" id="quote" href="mailto:willardw@willardwilliamsarchitect.com?subject=Quote%20request">Request a quote</a>
+        <div style="display:none"><div id="c-tier"></div><p id="tnote"></p><div id="pparts"></div><b id="pmid"></b><div id="prng"></div>
+          <input id="f-down" type="number"><input id="f-rate" type="number"><input id="f-yrs" type="number"><div id="pmo"></div><p id="pfine"></p></div>
+      </div>
+      <div class="dl">Take it into your own tools: <button type="button" id="dl">Download OBJ</button> <span>(Twinmotion, Rhino, Archicad)</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="logistics"><div class="wrap">
+  <div class="eyebrow">On site</div>
+  <h2>From truck to roof.</h2>
+  <p class="lead">The wall panels and roof cassettes arrive numbered and are set by a telescopic-boom machine. Press Watch it go up in the configurator to see it, then look around the site below and check the boom reach for the unit you chose.</p>
+  <div id="lgbox"></div>
+</div></section>
+
+<section id="engineering"><div class="wrap eng">
+  <div>
+    <div class="eyebrow">Engineering</div>
+    <h2>Every wall, numbered.</h2>
+    <p class="lead">Each wall is split into factory panels, and every panel carries its own ID from the model to the fabricator to the site. Switch the configurator to Panels to see them.</p>
+    <ul>
+      <li><b>Panelised walls.</b> Openings get their own panel, with king studs either side.</li>
+      <li><b>One model.</b> The same parameters drive the drawings, the panel schedule and the take-off.</li>
+      <li><b>No guesswork on site.</b> Panels arrive labeled and in order.</li>
+    </ul>
+  </div>
+  <svg viewBox="0 0 400 420" role="img" aria-label="Diagram of one wall panel with studs at 16 inches on center">
+    <g fill="none" stroke="#f1ece1" stroke-width="1.2">
+      <rect x="60" y="40" width="240" height="14"/><rect x="60" y="326" width="240" height="14"/>
+      <rect x="60" y="54" width="10" height="272"/><rect x="140" y="54" width="10" height="272"/>
+      <rect x="220" y="54" width="10" height="272"/><rect x="290" y="54" width="10" height="272"/>
+    </g>
+    <g stroke="#c8553a" stroke-width="1" fill="none">
+      <path d="M60 372h240M60 366v12M300 366v12"/><path d="M65 395h80M65 389v12M145 389v12"/>
+    </g>
+    <g fill="#8f897b" font-family="Inter,sans-serif" font-size="11" letter-spacing="1.5">
+      <text x="180" y="364" text-anchor="middle">PANEL WIDTH</text>
+      <text x="105" y="414" text-anchor="middle">16" O.C.</text>
+      <text x="60" y="24" fill="#f1ece1" font-size="12">PANEL N-07</text>
+    </g>
+  </svg>
+</div></section>
+
+<section id="ways"><div class="wrap">
+  <div class="eyebrow">Ways to build</div>
+  <h2>Choose how much we take on.</h2>
+  <div class="ways">
+    <div class="way"><small>01</small><h3>Design &amp; Kit</h3><p>Configured unit, permit-ready plans for your lot, and the factory panel package. For owners and builders who know the way.</p></div>
+    <div class="way"><small>02 &middot; Most chosen</small><h3>Managed</h3><p>Everything above, plus lot review, permit handling and a vetted partner builder. One point of contact.</p></div>
+    <div class="way"><small>03</small><h3>Turnkey</h3><p>One contract with Trillium Design Build for design, build and warranty. Select areas.</p></div>
+  </div>
+</div></section>
+
+<section id="studio"><div class="wrap">
+  <div class="eyebrow">The studio</div>
+  <h2>Architecture is where we belong.</h2>
+  <p class="lead">Willard Williams Jr. leads Willard Williams Architects, PC: 20+ years of high-end residential, commercial, healthcare and mission-critical work in Oregon, Washington, California, Nevada and Tennessee, with deep expertise in BIM and building technology. The same discipline sits behind every unit.</p>
+  <div class="brands">
+    <div><h3>Residential</h3><p>Custom homes, renovations and additions that fit the character of Southern Oregon and Northern California.</p></div>
+    <div><h3>Commercial</h3><p>Functional, well-built workplaces and public buildings, from tenant improvements to healthcare facilities.</p></div>
+    <div><h3>Sustainable design</h3><p>Efficient envelopes, durable materials and energy-conscious systems, chosen with the whole building in mind.</p></div>
+    <div><h3>Interior architecture</h3><p>Interiors for homes and businesses, drawn in 3D so you see the result before it is built.</p></div>
+  </div>
+  <div class="brands">
+    <div><h3>Pacific Living Solutions</h3><p>Prefabricated units, configured online.</p></div>
+    <div><h3>Trillium Design Build</h3><p>Builder of record for turnkey projects.</p></div>
+    <div><h3>Hours</h3><p>Monday to Friday, 9 AM to 4 PM Pacific.<br>Phoenix, OR &middot; Roseburg, OR &middot; Crescent City, CA</p></div>
+  </div>
+</div></section>
+
+<section id="resources"><div class="wrap">
+  <div class="eyebrow">References</div>
+  <h2>Where the rules and the finishes come from.</h2>
+  <p class="lead">Links we rely on and recommend. State rules set a floor; your city or county decides the rest, and we confirm it before anything is drawn for permit.</p>
+  <div class="brands">
+    <div><h3>ADU law</h3>
+      <p><a href="https://orcities.org/resources/communications/bulletin/dlcd-updates-guidance-adu-requirements" target="_blank" rel="noopener">Oregon: DLCD guidance on SB 1051 / HB 2001</a><br>
+      <a href="https://www.ezview.wa.gov/Portals/_1976/Documents/adu-examples/Commerce_ADU_Guidance_0624.pdf" target="_blank" rel="noopener">Washington: Commerce ADU guidance (HB 1337)</a><br>
+      <a href="https://www.hcd.ca.gov" target="_blank" rel="noopener">California: HCD ADU resources</a></p></div>
+    <div><h3>Fixtures &amp; fittings</h3>
+      <p><a href="https://us.busterandpunch.com" target="_blank" rel="noopener">Buster + Punch</a>: faucets, switches, hardware.<br>
+      <a href="https://www.modernforms.com" target="_blank" rel="noopener">Modern Forms</a>: smart ceiling fans and lighting.</p></div>
+    <div><h3>Materials</h3><p>Panel, insulation and cladding references are added as each supplier is confirmed.</p></div>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <div class="eyebrow">Contact</div>
+  <h2>Tell us about your lot.</h2>
+  <p class="lead">Free quote. 10% off for veterans, seniors, teachers, students and emergency services personnel.</p>
+  <p style="margin-top:32px;display:flex;gap:14px;flex-wrap:wrap">
+    <a class="btn" href="mailto:willardw@willardwilliamsarchitect.com">Email us</a>
+    <a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a>
+  </p>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="cols">
+    <div><strong>Willard Williams Architect, PC</strong>Phoenix, OR 97535<br>Roseburg, OR &middot; Crescent City, CA<br>Oregon licensed architect ARI-13396<br>Construction: Trillium Design Build Company, Oregon CCB #257175</div>
+    <div><strong>Contact</strong>willardw@willardwilliamsarchitect.com<br>(425) 951-9459</div>
+    <div><strong>Explore</strong>Lineup &middot; Configure &middot; Engineering &middot; Ways to build &middot; Studio &middot; References &middot; <a href="/privacy" style="text-decoration:underline">Privacy</a></div>
+  </div>
+  <p class="note">Renderings are generated from our parametric ADU model; model names, sizes and finishes are subject to change. Pricing is by written quote. The lot check reads public parcel data for the counties it covers (Jackson, Curry, Klamath and Lake in Oregon, all of Washington, and Alameda, Contra Costa, Santa Clara, San Francisco, San Mateo, Sonoma and Sacramento in California so far), applies assumed setbacks and state-level ADU baselines, and is not a zoning determination. Confirm setbacks, utilities and zoning with your city or county.</p>
+</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>/*ADU_JS*/</script>
+<script>/*PRICING_JS*/</script>
+<script>/*PLAN_JS*/</script>
+<script>/*PERF_JS*/</script>
+<script>/*LOGISTICS_JS*/</script>
+<script>/*LIB_DATA*/</script>
+<script>/*LIB_JS*/</script>
+<script>/*TEASE_JS*/</script>
+<script>
+/*LOTCHECK_JS*/
+
+(function(){
+  if(!window.THREE||!window.ADU){return;}
+  var A=ADU, $=function(id){return document.getElementById(id)};
+  function pitchFor(r){return A.pitchFor(r)}
+  function params(m){return A.makeParams({width:m.width,depth:m.depth,roof:m.roof,pitch:pitchFor(m.roof),door:m.door||"front"})}
+  function ftin(f){var i=Math.round(f*12);return Math.floor(i/12)+"′-"+(i%12)+"″"}
+
+  /* hero + lineup renders */
+  try{
+    var heroKey="";
+    function renderHero(){
+      var el=$("top"),cw=el.clientWidth||1280,ch=el.clientHeight||720,k=Math.min(1,1920/Math.max(cw,ch));
+      var w=Math.round(cw*k),h=Math.round(ch*k),wide=cw/ch>1.1,key=w+"x"+h;
+      if(key===heroKey)return;heroKey=key;
+      /* a wide screen puts the unit on the right; a tall one pulls the camera back and puts it above the text */
+      var view=wide?{az:-1.0,el:0.08,fov:24,r:84,dx:-9.5,dz:-0.5}:{az:-1.0,el:0.12,fov:cw/ch<0.65?56:34,r:84,dx:0,dz:cw/ch<0.65?-20:-3.5};
+      var url=A.renderStill(params(A.MODELS["PL 384"]),{dusk:true,finish:"charcoal"},view,w,h);
+      var hb=$("herobg");hb.style.backgroundImage="url("+url+")";hb.className="herobg on";
+    }
+    renderHero();
+    var rt=null;addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(renderHero,400)});
+    document.querySelectorAll(".model").forEach(function(el){
+      var name=el.dataset.model,p=params(A.MODELS[name]),q=A.quantities(p,A.panelize(p));
+      var img=new Image();img.alt=name+" prefab ADU, "+p.width+" by "+p.depth+" feet, "+p.roof+" roof";
+      img.src=A.renderStill(p,{dusk:true,finish:"charcoal"},{az:-0.95,el:0.14,fov:28,r:46},1280,800);
+      el.querySelector(".img").appendChild(img);
+      el.querySelector(".sub").textContent+=" · "+p.width+" × "+p.depth+" ft";
+      el.querySelector(".spec").innerHTML=[[q.floor.toFixed(0),"Square feet"],[q.panels,"Wall panels"],[p.width+" × "+p.depth,"Feet"]]
+        .map(function(s){return "<div><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
+      el.querySelector(".lplan").innerHTML=PLAN.svg(p,{dims:false,deck:false});
+      el.querySelector(".more").addEventListener("click",function(){choose(name);$("configure").scrollIntoView({behavior:"smooth"});});
+    });
+  }catch(err){console.warn("render failed",err);}
+
+  /* library: stills render lazily one at a time; a card opens a live 3D viewer with plans and the email form */
+  try{(function(){
+    var L=window.LIB,grid=$("lib-grid");if(!L||!grid)return;
+    var items=L.data().map(function(u){return{u:u,d:L.describe(u)}}).sort(function(a,b){return a.d.sf-b.d.sf});
+    function fin(it){return /cedar|kabin/i.test(it.u.name)?"cedar":"charcoal"}
+    var filters=[["all","All"],["studio","Studio"],["one","One bedroom"],["two","Two or more"],["1s","One storey"],["2s","Two storey"]],cur="all";
+    function keep(it,f){return f==="all"||(f==="studio"&&it.d.beds===0)||(f==="one"&&it.d.beds===1)||(f==="two"&&it.d.beds>=2)||(f==="1s"&&it.d.stories===1)||(f==="2s"&&it.d.stories===2)}
+    var queue=[],busy=false;
+    function pump(){
+      if(busy||!queue.length)return;busy=true;var j=queue.shift();
+      setTimeout(function(){
+        try{var url=L.still(j.it.u,{dusk:true,finish:fin(j.it)},{az:-0.95,el:0.14,fov:28},j.big?1400:1000,j.big?547:625),im=new Image();
+          im.alt=j.it.u.name+", "+j.it.d.sf+" square feet, "+j.it.d.kind.toLowerCase();im.src=url;j.el.appendChild(im);j.el.classList.add("ready")}catch(e){console.warn("library render failed",j.it.u.id,e)}
+        busy=false;pump()},30);
+    }
+    var io="IntersectionObserver" in window?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){io.unobserve(e.target);queue.push(e.target._job);pump()}})},{rootMargin:"300px"}):null;
+    function draw(){
+      grid.innerHTML="";var n=0;
+      items.forEach(function(it){
+        if(!keep(it,cur))return;
+        var big=n%7===0&&cur==="all",a=document.createElement("article");a.className="lc"+(big?" big":"");a.tabIndex=0;a.setAttribute("role","button");a.setAttribute("aria-label","Open "+it.u.name);
+        a.innerHTML='<div class="lc-img"></div><div class="lc-t"><h3></h3><span></span></div>';
+        a.querySelector("h3").textContent=it.u.name;a.querySelector("span").textContent=it.d.kind+" · "+it.d.sf+" sf"+(it.d.stories>1?" · "+it.d.stories+" storeys":"");
+        var im=a.querySelector(".lc-img");im._job={it:it,el:im,big:big};if(io)io.observe(im);else{queue.push(im._job);pump()}
+        a.addEventListener("click",function(){openV(it)});a.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();openV(it)}});
+        grid.appendChild(a);n++;
+      });
+    }
+    var fb=$("lib-filter");filters.forEach(function(f){var b=document.createElement("button");b.type="button";b.textContent=f[1];b.dataset.v=f[0];b.addEventListener("click",function(){cur=f[0];queue.length=0;
+      [].forEach.call(fb.children,function(x){x.setAttribute("aria-pressed",String(x.dataset.v===cur))});draw()});fb.appendChild(b)});
+    fb.children[0].setAttribute("aria-pressed","true");grid.style.gridAutoFlow="dense";draw();
+
+    var vs=null,vit=null,vdusk=true,vplan=0,V=$("libv");
+    function showV(refit){
+      var m=L.build(vit.u,{dusk:vdusk,finish:fin(vit)});vs.showModel(m,{dusk:vdusk,refit:refit});
+      if(refit){var cv=$("lv-cv"),asp=(cv.clientWidth||1)/(cv.clientHeight||1);vs.orbit.r=(Math.max(m.w,m.d)*2.35+12)*Math.min(2.2,Math.max(1,Math.pow(1.5/asp,.7)));vs.draw()}
+    }
+    function planTabs(){
+      var tabs=$("lv-tabs");tabs.innerHTML="";
+      vit.u.stories.forEach(function(s,i){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=s.name;b.setAttribute("aria-pressed",String(i===vplan));
+        b.addEventListener("click",function(){vplan=i;planTabs()});tabs.appendChild(b)});
+      $("lv-plan").innerHTML=L.plan(vit.u,vplan);
+    }
+    function openV(it){
+      vit=it;vplan=0;vdusk=true;V.classList.add("on");document.body.style.overflow="hidden";
+      try{history.replaceState(null,"","#u="+it.u.id)}catch(e){}
+      $("lv-name").textContent=it.u.name;$("lv-sub").textContent=it.d.kind+" · "+(it.d.roof==="gable"?"Gable":"Shed")+" roof";
+      $("lv-spec").innerHTML=[[it.d.sf,"Square feet"],[it.d.beds||"Studio","Bedrooms"],[it.d.stories,it.d.stories>1?"Storeys":"Storey"]].map(function(s){return"<div><b>"+s[0]+"</b><span>"+s[1]+"</span></div>"}).join("");
+      $("lv-cred").textContent="Redrawn from the published plans: "+it.u.source+". Reference design, not a Pacific Living Solutions model.";
+      planTabs();
+      var ch=$("lv-chips");ch.innerHTML="";
+      [["dusk","Dusk"],["day","Day"]].forEach(function(c){var b=document.createElement("button");b.type="button";b.className="chip";b.textContent=c[1];b.dataset.v=c[0];b.setAttribute("aria-pressed",String((c[0]==="dusk")===vdusk));
+        b.addEventListener("click",function(){vdusk=c[0]==="dusk";[].forEach.call(ch.children,function(x){x.setAttribute("aria-pressed",String((x.dataset.v==="dusk")===vdusk))});showV(false)});ch.appendChild(b)});
+      TEASE.mount($("lv-tz"),{unit:{id:it.u.id,name:it.u.name,sf:it.d.sf,beds:it.d.beds,stories:it.d.stories,kind:it.d.kind,source:it.u.source},source:"library",
+        image:function(){return L.still(it.u,{dusk:true,finish:fin(it)},{az:-0.95,el:0.14,fov:28},1200,750)}});
+      requestAnimationFrame(function(){
+        if(!vs){vs=A.Stage($("lv-cv"),{interactive:true,keepZoom:true,fov:30});vs.orbit.az=-0.95;vs.orbit.el=0.17}
+        showV(true);vs.spin(!matchMedia("(prefers-reduced-motion: reduce)").matches);
+      });
+    }
+    function closeV(){V.classList.remove("on");document.body.style.overflow="";if(vs)vs.spin(false);try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
+    $("lv-x").addEventListener("click",closeV);
+    addEventListener("keydown",function(e){if(e.key==="Escape"&&V.classList.contains("on"))closeV()});
+    var m=/^#u=(.+)$/.exec(location.hash);if(m){var f=items.filter(function(x){return x.u.id===decodeURIComponent(m[1])})[0];if(f)openV(f)}
+  })()}catch(err){console.warn("library failed",err)}
+
+  /* configurator */
+  var st={model:"PL 384",width:24,depth:16,roof:"shed",finish:"charcoal",dusk:true,panels:false,services:false,tier:"managed",perf:"high",door:"front"};
+  var LGI=null;try{LGI=LOGI.mount($("lgbox"))}catch(err){console.warn("logistics scene failed",err)}
+  var FD=PRICE.PRICING.finance;$("f-down").value=FD.down;$("f-rate").value=FD.rate;$("f-yrs").value=FD.years;
+  ["f-down","f-rate","f-yrs"].forEach(function(id){$(id).addEventListener("input",function(){update()})});
+  var stage=null,lastKey="";
+  function chips(id,items,key,onpick){
+    var box=$(id);box.innerHTML="";
+    items.forEach(function(it){var b=document.createElement("button");b.type="button";b.className=it.sw?"sw":"chip";
+      if(it.sw){b.style.background=it.sw;b.title=it.label;b.setAttribute("aria-label",it.label)}else b.textContent=it.label;
+      b.addEventListener("click",function(){onpick(it.v)});b.dataset.v=it.v;box.appendChild(b)});
+  }
+  function mark(id,val){document.querySelectorAll("#"+id+" button").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.v===String(val)))})}
+  chips("c-model",Object.keys(A.MODELS).map(function(k){return{v:k,label:k}}),"model",choose);
+  chips("c-tier",Object.keys(PRICE.PRICING.tiers).map(function(k){return{v:k,label:PRICE.PRICING.tiers[k].label}}),"tier",function(v){st.tier=v;update()});
+  chips("c-perf",[{v:"high",label:"High performance"},{v:"code",label:"Code minimum"}],"perf",function(v){st.perf=v;update()});
+  chips("c-roof",[{v:"shed",label:"Shed"},{v:"gable",label:"Gable"},{v:"flat",label:"Flat"},{v:"split",label:"Split + transom"}],"roof",function(v){st.roof=v;st.model="Custom";update()});
+  chips("c-door",[{v:"front",label:"Front"},{v:"west",label:"West end"}],"door",function(v){st.door=v;update()});
+  chips("c-fin",Object.keys(A.FIN).map(function(k){return{v:k,sw:A.FIN[k].swatch,label:A.FIN[k].name}}),"finish",function(v){st.finish=v;update()});
+  chips("c-view",[{v:"dusk",label:"Dusk"},{v:"day",label:"Day"},{v:"panels",label:"Panels"},{v:"services",label:"Services"}],"view",function(v){
+    if(v==="panels")st.panels=!st.panels;else if(v==="services"){st.services=!st.services;if(st.services)st.dusk=true}else{st.dusk=v==="dusk"}update()});
+  function choose(name){var m=A.MODELS[name];st.model=name;st.width=m.width;st.depth=m.depth;st.roof=m.roof;update(true)}
+  $("r-w").addEventListener("input",function(){st.width=+this.value;st.model="Custom";update()});
+  $("r-d").addEventListener("input",function(){st.depth=+this.value;st.model="Custom";update()});
+
+  function update(refit){
+    var p=params(st),errs=A.validate(p),eb=$("errors");
+    eb.style.display=errs.length?"block":"none";eb.innerHTML=errs.join("<br>");
+    $("r-w").value=st.width;$("r-d").value=st.depth;$("o-w").textContent=ftin(st.width);$("o-d").textContent=ftin(st.depth);
+    mark("c-model",st.model);mark("c-roof",st.roof);mark("c-door",st.door);mark("c-perf",st.perf);mark("c-fin",st.finish);
+    document.querySelectorAll("#c-view button").forEach(function(b){var v=b.dataset.v;b.setAttribute("aria-pressed",String(v==="panels"?st.panels:v==="services"?st.services:(v==="dusk")===st.dusk))});
+    $("dims").innerHTML=(st.model==="Custom"?"Custom":st.model)+"<br>"+ftin(st.width)+" × "+ftin(st.depth);
+    var pans=A.panelize(p),q=A.quantities(p,pans);
+    $("stats").innerHTML=[[q.floor.toFixed(0)+" sf","Floor area"],[q.panels,"Wall panels"],[q.studs,"Studs"],[q.roof.toFixed(0)+" sf","Roof area"]]
+      .map(function(s){return '<div class="stat"><b>'+s[0]+'</b><span>'+s[1]+'</span></div>'}).join("");
+    var tp=PRICE.PRICING.tiers[st.tier],es=PRICE.estimate(st.tier,q,st.roof,st.finish,st.perf),ok=!errs.length&&es;
+    mark("c-tier",st.tier);$("tnote").textContent=tp.note;
+    $("pparts").innerHTML=ok?[["Factory kit","unit"],["Design & engineering","design"],["Site & install","site"]].map(function(r){var v=es.parts[r[1]];return "<div><span>"+r[0]+"</span><b>"+(v?PRICE.usd(v):"Not included")+"</b></div>"}).join(""):"";
+    $("pmid").textContent=ok?PRICE.usd(es.mid):"—";
+    $("prng").textContent=ok?"Range "+PRICE.usd(es.low)+" to "+PRICE.usd(es.high):"Fix the size to see a price";
+    $("quote").href="mailto:willardw@willardwilliamsarchitect.com?subject="+encodeURIComponent("Quote request: "+st.model)+"&body="+encodeURIComponent("Please send a quote for "+st.model+", "+ftin(st.width)+" x "+ftin(st.depth)+", "+st.roof+" roof, "+(st.door==="west"?"west-end entry door, ":"front entry door, ")+st.finish+" finish. Property address: ");
+    $("pmo").textContent=ok?PRICE.usd(PRICE.payment(es.mid,+$("f-down").value,+$("f-rate").value,+$("f-yrs").value))+" / month":"—";
+    $("pfine").textContent="Planning estimate based on local project costs, not a quote. Real prices depend on your site, and can run about 20% either way. Excludes utilities, permits and sales tax unless your tier says otherwise. Payment is simple fixed-rate amortisation on the amount after your down payment; it is not a loan offer and not financial advice.";
+    $("plan").innerHTML=errs.length?"":PLAN.svg(p,{mep:st.services})+(st.services?PLAN.mepHtml():"")+PLAN.checkHtml(p);
+    $("perfbox").innerHTML=errs.length?"":PERF.html(p,st.perf);
+    if(LGI&&!errs.length)LGI.update(p);
+    if(!stage)return;
+    stage.show(p,{finish:st.finish,dusk:st.dusk,showPanels:st.panels,services:st.services});
+    if(refit){var cv=$("stage"),asp=(cv.clientWidth||1)/(cv.clientHeight||1);stage.orbit.r=(Math.max(p.width,p.depth)*2.6+12)*Math.min(2.2,Math.max(1,Math.pow(1.3/asp,.6)));stage.draw()}
+  }
+  try{
+    stage=A.Stage($("stage"),{interactive:true,keepZoom:true,fov:32});
+    stage.orbit.az=-0.95;stage.orbit.el=0.16;
+    update(true);
+    if("IntersectionObserver" in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches){
+      new IntersectionObserver(function(es){stage.spin(es[0].isIntersecting)},{threshold:.3}).observe($("stage"));
+    }
+  }catch(err){console.warn("stage failed",err);update(false);}
+  var playBtn=$("play");
+  function playLabel(running){playBtn.textContent=running?"■ Stop":"▶ Watch it go up"}
+  playBtn.addEventListener("click",function(){
+    if(!stage||!stage.unit)return;
+    if(stage.assembling){stage.stopAssemble();playLabel(false);return}
+    if(st.panels){st.panels=false;update()}
+    playLabel(true);stage.assemble(function(){playLabel(false)});
+  });
+  $("dl").addEventListener("click",function(){
+    if(!stage||!stage.unit)return;
+    var nm=(st.model==="Custom"?"PL-custom":st.model.replace(" ","-"))+"-"+st.width+"x"+st.depth,o=A.exportOBJ(stage.unit,nm);
+    A.download(nm+".obj",o.obj);setTimeout(function(){A.download(nm+".mtl",o.mtl)},400);
+  });
+})();
+</script>
+</body>
+</html>

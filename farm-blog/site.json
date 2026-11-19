@@ -1,0 +1,13 @@
+{
+  "name": "Willard Williams",
+  "tagline": "Animals, gardens, building projects and the story of the land.",
+  "base": "https://willardwilliams.com",
+  "youtube_channel": "",
+  "email": "",
+  "categories": {
+    "animals": "Animals",
+    "garden": "Garden & Harvest",
+    "build": "Building",
+    "land": "The Land"
+  }
+}

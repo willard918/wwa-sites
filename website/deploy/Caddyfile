@@ -1,0 +1,11 @@
+# Plain VPS: Caddy gets and renews HTTPS certificates itself once each domain's A record points here.
+# Staging / ADU brand domain (live)
+pacificnestadu.com, www.pacificnestadu.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8787
+}
+# Main site. Add only after the A records for @ and www move to this server (certificate requests fail until then).
+willardwilliamsarchitect.com, www.willardwilliamsarchitect.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8787
+}

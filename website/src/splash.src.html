@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your lot | Willard Williams Architect</title>
+<meta name="description" content="A first look at your lot and the prefabricated backyard homes that could fit it. Willard Williams Architect, Phoenix, Oregon.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0a08;--bg2:#12100d;--ink:#f1ece1;--muted:#8f897b;--line:#26231d;--accent:#c8553a}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:300 16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:300;line-height:1.02;letter-spacing:-.02em}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+section{padding:96px 0;border-top:1px solid var(--line)}
+.eyebrow{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:22px}
+h2{font-size:clamp(32px,5vw,56px);max-width:15em;margin-bottom:22px}
+.lead{color:var(--muted);font-size:18px;max-width:560px}
+.btn{display:inline-block;background:var(--ink);color:var(--bg);padding:16px 28px;font:500 13px/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;border:0;cursor:pointer}
+.btn:hover{background:var(--accent);color:#fff}
+.btn.ghost{background:none;color:var(--ink);border:1px solid #4a463c}.btn.ghost:hover{border-color:var(--ink);background:none;color:var(--ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+nav{position:fixed;top:0;left:0;right:0;z-index:10;background:linear-gradient(rgba(11,10,8,.94),rgba(11,10,8,.6));backdrop-filter:blur(8px)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:400}
+nav a.tel{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+@media(max-width:520px){.logo{font-size:10px;letter-spacing:.14em}nav a.tel{font-size:11px;letter-spacing:.06em}}
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:120px 0 64px;border:0;overflow:hidden}
+.herobg{position:absolute;inset:0;background:radial-gradient(1100px 600px at 78% 20%,#2c2218 0%,transparent 70%) var(--bg);background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s}
+.herobg.on{opacity:1}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,10,8,.92) 0%,rgba(11,10,8,.5) 44%,rgba(11,10,8,0) 74%),linear-gradient(0deg,rgba(11,10,8,.9) 0%,rgba(11,10,8,0) 42%)}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.hero h1{font-size:clamp(44px,8.4vw,112px);margin-bottom:26px;max-width:11em}
+.hero p.sub{color:#b6af9f;font-size:19px;max-width:540px;margin-bottom:34px}
+.hero .row{display:flex;gap:12px;flex-wrap:wrap}
+.rise{opacity:0;transform:translateY(14px);animation:rise 1s .2s forwards cubic-bezier(.2,.7,.2,1)}
+.rise.d2{animation-delay:.45s}.rise.d3{animation-delay:.7s}
+@keyframes rise{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.rise{animation:none;opacity:1;transform:none}}
+@media(max-width:760px){.hero::after{background:linear-gradient(0deg,rgba(11,10,8,.96) 0%,rgba(11,10,8,.62) 56%,rgba(11,10,8,.12) 100%)}.herobg{background-position:62% 20%}}
+
+.lotgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:44px;align-items:start;margin-top:36px}
+.lotgrid svg{width:100%;height:auto;max-height:70vh;background:#0b0a08;border:1px solid var(--line);display:block}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:400 12px Inter,sans-serif;letter-spacing:.08em;padding:10px 14px;background:none;color:var(--muted);border:1px solid #3a362e;cursor:pointer}
+.chip[aria-pressed=true]{color:var(--ink);border-color:var(--ink)}.chip:disabled{opacity:.4;cursor:not-allowed}
+.lc-chips{margin-top:14px}.lc-note{font-size:12px;color:#7a7467;margin:10px 0 0}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 24px;margin:0 0 26px}
+.facts b{display:block;font:300 34px/1.1 Fraunces,serif}.facts span{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.fitrow{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.fitrow.ok span:last-child{color:#a5d0ae}.fitrow.no{color:var(--muted)}
+@media(max-width:860px){.lotgrid{grid-template-columns:1fr;gap:28px}}
+
+.units{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0 28px}
+.unit{text-align:left;background:var(--bg2);border:1px solid var(--line);color:var(--ink);cursor:pointer;padding:0;font:inherit;overflow:hidden;position:relative}
+.unit[aria-pressed=true]{border-color:var(--ink)}
+.unit .im{aspect-ratio:16/10;background:#14110d}.unit img{width:100%;height:100%;object-fit:cover;display:block}
+.unit .t{padding:14px 16px 16px}.unit h3{font-size:26px}.unit small{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.unit .b{position:absolute;top:10px;left:10px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:5px 9px;background:rgba(11,10,8,.78);color:#a5d0ae}
+.unit .b.no{color:#a9a291}
+.stagebox{position:relative;height:min(70vh,560px);background:#0d0b09;border:1px solid var(--line)}
+.stagebox canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.stagebox .hint{position:absolute;right:14px;bottom:12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6f6a5e;pointer-events:none}
+@media(max-width:760px){.units{grid-template-columns:1fr}.unit{display:grid;grid-template-columns:42% 1fr}.unit .im{aspect-ratio:auto;height:100%;min-height:96px}}
+
+.keep{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+.reach{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.tz{border:1px solid var(--line);background:var(--bg2);padding:28px}
+.tz-l{display:block;font:300 30px/1.1 Fraunces,serif;margin-bottom:8px}
+.tz-p{font-size:14px;color:var(--muted);margin-bottom:16px}
+.tz-r{display:flex;border:1px solid #4a463c;margin-bottom:10px}
+.tz-r input,.tz-a{flex:1;min-width:0;border:0;padding:15px 16px;font:inherit;font-size:15px;background:transparent;color:var(--ink)}
+.tz-a{width:100%;border:1px solid #4a463c;margin-bottom:12px;display:block}
+.tz-r .btn{padding:0 18px;font-size:12px}
+.tz-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.tz-c{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted)}.tz-c input{margin-top:4px}
+.tz-m{font-size:14px;margin-top:12px}.tz-m.ok{color:#9ccf9c}.tz-m.bad{color:#e07a5f}
+@media(max-width:860px){.keep{grid-template-columns:1fr;gap:34px}}
+
+.check{display:flex;max-width:620px;border:1px solid #4a463c;background:rgba(11,10,8,.6)}
+.check input{flex:1;min-width:0;border:0;padding:19px 20px;font:inherit;background:transparent;color:var(--ink)}
+.check input::placeholder{color:#7a7467}.check .btn{padding:0 26px}
+@media(max-width:520px){.check{flex-direction:column}.check .btn{padding:17px 0}}
+#result{display:none;max-width:620px;margin-top:14px;padding:16px 20px;border-left:2px solid var(--accent);background:var(--bg2);color:var(--muted);font-size:14px}
+footer{padding:48px 0 60px;border-top:1px solid var(--line);color:#6f6a5e;font-size:12px}
+footer .wrap{display:grid;gap:10px}
+/*LOTCHECK_CSS*/
+</style>
+</head>
+<body>
+<nav><div class="wrap"><a class="logo" href="#top">Willard Williams Architect</a><a class="tel" href="tel:+14259519459">(425) 951-9459</a></div></nav>
+
+<header class="hero" id="top">
+  <div class="herobg" id="herobg"></div>
+  <div class="wrap">
+    <div class="eyebrow rise" id="sp-eye">Prefabricated ADUs &middot; Oregon &middot; Washington &middot; California</div>
+    <h1 class="rise d2" id="sp-h1">Precision,<br>at home.</h1>
+    <p class="sub rise d3" style="margin-bottom:6px;color:#f1ece1">Rent it out. House family. Work from home.</p>
+    <p class="sub rise d3" id="sp-sub">Tell us where you want to build and we'll tell you what's possible.</p>
+    <div class="row rise d3" id="sp-cta"></div>
+    <form class="check rise d3" id="lotform" style="margin-top:6px">
+      <input id="addr" placeholder="Enter a property address" aria-label="Property address" autocomplete="street-address">
+      <button class="btn" type="submit">Check this lot</button>
+    </form>
+    <div id="result" role="status"></div>
+  </div>
+</header>
+
+<section id="lot" style="display:none"><div class="wrap">
+  <div class="eyebrow">Your lot</div>
+  <h2 id="lot-h">A first look.</h2>
+  <p class="lead" id="lot-p"></p>
+  <div class="lotgrid"><div id="lotplan"></div><div><div class="facts" id="facts"></div><div id="fits"></div>
+    <p class="lc-note" id="lot-note"></p><p style="margin-top:22px"><button class="btn ghost" id="fullrep" type="button">Open the full report</button></p></div></div>
+</div></section>
+
+<section id="homes"><div class="wrap">
+  <div class="eyebrow">The homes</div>
+  <h2>One system. Pick a size.</h2>
+  <p class="lead">Factory-built wall panels, drawn by an architect, set on your site. Choose one to walk around it.</p>
+  <div class="units" id="units"></div>
+  <div class="stagebox"><canvas id="sp-stage" aria-label="3D model, drag to look around"></canvas><div class="hint">Drag to look around</div></div>
+</div></section>
+
+<section id="keep"><div class="wrap keep">
+  <div>
+    <div class="eyebrow">Next</div>
+    <h2>Keep it. Or ask me anything.</h2>
+    <p class="lead">There is no price tag here on purpose: a fair number depends on your site, and I would rather give you a real one. Reply to the email we send, or reach me directly.</p>
+    <div class="reach"><a class="btn" href="mailto:willardw@willardwilliamsarchitect.com?subject=Lot%20review">Email me</a><a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a></div>
+  </div>
+  <div id="sp-tz"></div>
+</div></section>
+
+<footer><div class="wrap">
+  <div>Willard Williams Architect &middot; Phoenix, OR 97535 &middot; Roseburg, OR &middot; Crescent City, CA<br>Construction: Trillium Design Build Company, Oregon CCB #257175 &middot; <a href="/privacy" style="text-decoration:underline">Privacy</a></div>
+  <div>A first look from public parcel data with assumed setbacks and state-level ADU baselines. It is not a zoning determination or a survey; existing buildings, easements, utilities, flood and fire zones were not checked. Confirm with your city or county.</div>
+</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>/*ADU_JS*/</script>
+<script>/*PLAN_JS*/</script>
+<script>/*TEASE_JS*/</script>
+<script>
+/*LOTCHECK_JS*/
+
+(function(){
+  var A=ADU,$=function(id){return document.getElementById(id)},L=window.LETTER||null;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function num(n){return Number(n).toLocaleString("en-US")}
+  function params(m){return A.makeParams({width:m.width,depth:m.depth,roof:m.roof,pitch:A.pitchFor(m.roof)})}
+  var KIND={"PL 384":"Studio","PL 576":"One bedroom","PL 768":"Two bedroom"},names=Object.keys(KIND);
+  function sf(n){var m=A.MODELS[n];return m.width*m.depth}
+  var fits={};if(L&&L.lot&&L.lot.results)L.lot.results.forEach(function(r){fits[r.model]=r});
+  var pick=L&&L.best?L.best.model:"PL 384";
+
+  /* hero copy, from the letter */
+  var full=L?L.address+", "+L.city+", "+L.state+(L.zip?" "+L.zip:""):"";
+  if(L){
+    var street=L.address;
+    $("sp-eye").textContent="A letter from Willard Williams, Architect";
+    $("sp-h1").innerHTML=esc(street)+(L.best?"<br>has room.":"<br>Let&rsquo;s look.");
+    $("sp-sub").textContent=L.best&&L.sf?"The county shows about "+num(L.sf)+" sq ft. A "+sf(L.best.model)+" sq ft backyard home looks like it could fit. It is an estimate from public records, and a visit would settle it.":"We looked at your lot. Here is what the public record shows.";
+    $("sp-cta").innerHTML='<a class="btn" href="#lot">See your lot</a><a class="btn ghost" href="#homes">See the homes</a>';
+    $("addr").value=full;$("lotform").style.display="none";
+    window.LASTLOT={match:{address:full}};
+    document.title=street+" | Willard Williams Architect";
+  }else{
+    $("sp-cta").innerHTML="";
+  }
+
+  /* hero render */
+  try{
+    var heroKey="";
+    function renderHero(){
+      var el=$("top"),cw=el.clientWidth||1280,ch=el.clientHeight||720,k=Math.min(1,1920/Math.max(cw,ch)),w=Math.round(cw*k),h=Math.round(ch*k),wide=cw/ch>1.1,key=w+"x"+h;
+      if(key===heroKey)return;heroKey=key;
+      var view=wide?{az:-1.0,el:0.08,fov:24,r:84,dx:-9.5,dz:-0.5}:{az:-1.0,el:0.12,fov:cw/ch<0.65?56:34,r:84,dx:0,dz:cw/ch<0.65?-28:-3.5};
+      var url=A.renderStill(params(A.MODELS[pick]),{dusk:true,finish:"charcoal"},view,w,h);
+      var hb=$("herobg");hb.style.backgroundImage="url("+url+")";hb.className="herobg on";
+    }
+    renderHero();var rt=null;addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(renderHero,400)});
+  }catch(e){console.warn("hero failed",e)}
+
+  /* the lot, from the stored check */
+  if(L&&L.lot){
+    $("lot").style.display="block";
+    $("lot-h").textContent=L.address+".";
+    $("lot-p").textContent=L.verdict||"";
+    LOTPLAN($("lotplan"),L.lot);
+    $("facts").innerHTML=[[L.sf?num(L.sf)+" sq ft":"—","Lot size, county record"],[L.best?L.best.model:"—","Largest that fits"]].concat(L.area&&L.area.rent_used?[["$"+num(L.area.rent_used)+"/mo","Typical rent in your area, Census"]]:[]).map(function(f){return"<div><b>"+f[0]+"</b><span>"+f[1]+"</span></div>"}).join("");
+    if(L.area&&L.area.rent_used){var yr=Math.round(L.area.rent_used*12/100)*100;var fp=document.createElement("p");fp.className="fine";fp.style.cssText="margin-top:14px;max-width:46ch;font-size:13px;line-height:1.5;color:#8f897b";fp.textContent="A backyard home that rented near that typical rent would bring in roughly $"+num(yr)+" a year, before costs. It is a Census estimate for your area, not a quote: actual rents vary with the home, the street and the year.";$("facts").parentNode.insertBefore(fp,$("fits"));}
+    $("fits").innerHTML=L.lot.results.map(function(r){return'<div class="fitrow '+(r.fits?"ok":"no")+'"><span>'+esc(r.model)+" &nbsp;"+r.size_ft[0]+"′ × "+r.size_ft[1]+"′</span><span>"+(r.fits?"Fits, "+r.margin_ft+"′ to spare":"Does not fit")+"</span></div>"}).join("");
+    $("lot-note").textContent="Setbacks assumed: "+L.lot.assumptions.front_ft+"′ front, "+L.lot.assumptions.side_rear_ft+"′ side and rear. "+L.lot.assumptions.note;
+    $("fullrep").addEventListener("click",function(){$("lotform").requestSubmit()});
+  }
+
+  /* the homes: three cards, one live model, the keep-it form follows the selection */
+  var stage=null,imgs={};
+  function card(n){
+    var m=A.MODELS[n],b=document.createElement("button");b.type="button";b.className="unit";b.dataset.n=n;
+    var f=fits[n],badge=L&&L.lot?'<span class="b'+(f&&f.fits?"":" no")+'">'+(f&&f.fits?"Fits your lot":"Won&rsquo;t fit")+"</span>":"";
+    b.innerHTML=badge+'<div class="im"></div><div class="t"><h3>'+n+'</h3><small>'+KIND[n]+" · "+m.width+" × "+m.depth+" ft · "+sf(n)+" sf</small></div>";
+    b.addEventListener("click",function(){choose(n)});return b;
+  }
+  names.forEach(function(n){$("units").appendChild(card(n))});
+  setTimeout(function(){names.forEach(function(n,i){setTimeout(function(){try{
+    var im=new Image();im.alt=n+" at dusk";im.src=A.renderStill(params(A.MODELS[n]),{dusk:true,finish:"charcoal"},{az:-0.95,el:0.14,fov:28,r:46},900,560);
+    document.querySelector('.unit[data-n="'+n+'"] .im').appendChild(im)}catch(e){}},i*120)})},300);
+  function mountTease(n){
+    var m=A.MODELS[n];
+    TEASE.mount($("sp-tz"),{unit:{id:n,name:n,sf:sf(n),beds:n==="PL 384"?0:n==="PL 576"?1:2,stories:1,kind:KIND[n],source:""},source:"splash",extra:L?{code:L.code}:{},
+      image:function(){return A.renderStill(params(m),{dusk:true,finish:"charcoal"},{az:-0.95,el:0.14,fov:28,r:46},1200,750)}});
+  }
+  function choose(n){
+    pick=n;[].forEach.call(document.querySelectorAll(".unit"),function(b){b.setAttribute("aria-pressed",String(b.dataset.n===n))});
+    if(stage){stage.show(params(A.MODELS[n]),{finish:"charcoal",dusk:true});var cv=$("sp-stage"),asp=(cv.clientWidth||1)/(cv.clientHeight||1),m=A.MODELS[n];
+      stage.orbit.r=(Math.max(m.width,m.depth)*2.6+12)*Math.min(2.2,Math.max(1,Math.pow(1.3/asp,.6)));stage.draw()}
+    mountTease(n);
+  }
+  try{stage=A.Stage($("sp-stage"),{interactive:true,keepZoom:true,fov:32});stage.orbit.az=-0.95;stage.orbit.el=0.16;
+    if("IntersectionObserver" in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches)new IntersectionObserver(function(es){stage.spin(es[0].isIntersecting)},{threshold:.3}).observe($("sp-stage"));
+  }catch(e){console.warn("stage failed",e)}
+  choose(pick);
+})();
+</script>
+</body>
+</html>

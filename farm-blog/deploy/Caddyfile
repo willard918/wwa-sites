@@ -1,0 +1,19 @@
+# Full server Caddyfile: the existing ADU site, plus the farm blog. Install ONLY after willardwilliams.com's A record points at this server.
+pacificnestadu.com, www.pacificnestadu.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8787
+}
+
+willardwilliams.com, www.willardwilliams.com {
+	encode gzip
+	root * /srv/farm
+	file_server
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
