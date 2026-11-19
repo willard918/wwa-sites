@@ -8,7 +8,7 @@ if (!form || !input || !status) return;
 
 var API = window.LOTCHECK_API != null ? window.LOTCHECK_API :
   (location.protocol === "file:" ? "http://127.0.0.1:8787" : "");
-var MAIL = "willardw@willardwilliamsarchitect.com";
+var MAIL = "contact@pacificlivingsolutions.com";
 var NS = "http://www.w3.org/2000/svg";
 
 function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }

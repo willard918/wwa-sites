@@ -282,6 +282,44 @@ def handle_tease(p, ip, lotcheck_fn):
     return 200, {"ok": True, "sent": sent}
 
 
+CONTACT_TOPICS = {"quote": "Quote request", "lot": "Lot question", "general": "General"}
+
+
+def handle_contact(p, ip):
+    """Contact form: validate, keep a copy in data/notify, email the studio at once when SMTP is set. Reply-To is the visitor. -> (status, json)."""
+    if not isinstance(p, dict):
+        return 400, {"ok": False, "error": "Bad request."}
+    if p.get("website"):  # honeypot
+        return 200, {"ok": True}
+    name = re.sub(r"\s+", " ", str(p.get("name", ""))).strip()[:100]
+    email = str(p.get("email", "")).strip()
+    phone = str(p.get("phone", "")).strip()[:40]
+    addr = re.sub(r"\s+", " ", str(p.get("address", ""))).strip()[:200]
+    msg_text = str(p.get("message", "")).strip()[:4000]
+    topic = p.get("topic") if p.get("topic") in CONTACT_TOPICS else "general"
+    if not name or not msg_text:
+        return 400, {"ok": False, "error": "Please add your name and a short message."}
+    if not EMAIL_RE.match(email) or len(email) > 254 or any(c in email for c in "\r\n"):
+        return 400, {"ok": False, "error": "That email address doesn't look right."}
+    token = secrets.token_urlsafe(6)
+    body = (f"New message from the site ({CONTACT_TOPICS[topic]})\n\nName: {name}\nEmail: {email}\nPhone: {phone or '-'}\nProperty: {addr or '-'}\n\n{msg_text}\n\nToken: {token}\n")
+    d = DATA / "notify"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-contact-{token}.txt").write_text(body, encoding="utf-8")
+    _append(DATA / "contacts.jsonl", {"ts": _now(), "token": token, "topic": topic, "email": email.lower(), "ip": _ip_hash(ip)})
+    sent = False
+    if os.environ.get("WWA_SMTP_HOST"):
+        try:
+            m = EmailMessage()
+            m["Subject"] = (f"{CONTACT_TOPICS[topic]}: {name}" + (f", {addr}" if addr else "")).replace("\r", " ").replace("\n", " ")[:200]
+            m["From"], m["To"], m["Reply-To"], m["Date"], m["Message-ID"] = sender(), os.environ.get("WWA_NOTIFY", sender()), f"{name.replace(chr(34), '')} <{email}>", formatdate(localtime=False), make_msgid()
+            m.set_content(body)
+            sent = _send_smtp(m)
+        except Exception as e:
+            log_event("contact_failed", ip, token=token, err=str(e)[:100])
+    return 200, {"ok": True, "sent": sent}
+
+
 def notify_owner(token, email, unit, addr, lot, src, extra):
     """Tell the studio a lead arrived: always a text file in data/notify, and an email when SMTP is configured."""
     code = (extra or {}).get("code") if isinstance(extra, dict) else None

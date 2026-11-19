@@ -32,7 +32,7 @@
           msg.innerHTML = d.sent ? "Sent. Check your inbox for <b>" + esc(ctx.unit.name) + "</b>." : "Saved. Email sending is switched off in this prototype, so nothing has left the building yet. Your note is ready in the outbox.";
           f.querySelector(".tz-r").style.display = "none";
         })
-        .catch(function () { msg.textContent = "The server is offline. Email " + "willardw@willardwilliamsarchitect.com" + " and we'll send it by hand."; msg.className = "tz-m bad"; })
+        .catch(function () { msg.textContent = "The server is offline. Email " + "contact@pacificlivingsolutions.com" + " and we'll send it by hand."; msg.className = "tz-m bad"; })
         .then(function () { btn.disabled = false; btn.textContent = "Email it to me"; });
     });
   }

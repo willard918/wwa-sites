@@ -44,6 +44,10 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:7
 .check input{flex:1;min-width:0;border:0;padding:20px 22px;font:inherit;background:transparent;color:var(--ink)}
 .check input::placeholder{color:#7a7467}
 .check .btn{padding:0 30px}
+.cform{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:640px;margin-top:28px;position:relative}
+.cform input,.cform select,.cform textarea{border:1px solid #4a463c;background:rgba(11,10,8,.6);color:var(--ink);padding:16px 18px;font:inherit;min-width:0}
+.cform textarea,.cform .btn,.cform p{grid-column:1/-1}
+@media(max-width:520px){.cform{grid-template-columns:1fr}}
 @media(max-width:520px){.check{flex-direction:column}.check input{padding:18px 18px}.check .btn{padding:18px 0}}
 #result{display:none;max-width:640px;margin-top:14px;padding:16px 20px;border-left:2px solid var(--accent);background:var(--bg2);color:var(--muted);font-size:14px}
 /*LOTCHECK_CSS*/
@@ -287,11 +291,15 @@ footer strong{display:block;color:var(--ink);font-weight:400;margin-bottom:6px}
       <div class="stats" id="stats"></div>
       <div class="cplan"><small>Floor plan</small><div id="plan"></div></div>
       <div class="cplan"><small>Energy performance</small><div id="perfbox"></div></div>
-      <div class="price"><small>Pricing</small>
-        <p class="tnote" style="margin:8px 0 14px">Cost depends on your site, utilities and how much of the work you want us to take on. Send us this configuration and we'll come back with a written quote.</p>
-        <a class="btn" id="quote" href="mailto:willardw@willardwilliamsarchitect.com?subject=Quote%20request">Request a quote</a>
-        <div style="display:none"><div id="c-tier"></div><p id="tnote"></p><div id="pparts"></div><b id="pmid"></b><div id="prng"></div>
-          <input id="f-down" type="number"><input id="f-rate" type="number"><input id="f-yrs" type="number"><div id="pmo"></div><p id="pfine"></p></div>
+      <div class="price"><small>Design &amp; Kit estimate</small>
+        <p class="tnote" id="tnote" style="margin:8px 0 10px"></p>
+        <div id="pparts"></div>
+        <b id="pmid" class="big"></b><div id="prng" class="rng"></div>
+        <p class="tnote" id="pfine" style="min-height:0"></p>
+        <p class="tnote" style="margin:0 0 14px">Site work, foundation, crane and set depend on your lot and builder. Send us this configuration and we'll come back with a written quote for the full project.</p>
+        <a class="btn" id="quote" href="mailto:quotes@pacificlivingsolutions.com?subject=Quote%20request">Request a quote</a>
+        <div style="display:none"><div id="c-tier"></div>
+          <input id="f-down" type="number"><input id="f-rate" type="number"><input id="f-yrs" type="number"><div id="pmo"></div></div>
       </div>
       <div class="dl">Take it into your own tools: <button type="button" id="dl">Download OBJ</button> <span>(Twinmotion, Rhino, Archicad)</span></div>
     </div>
@@ -380,16 +388,38 @@ footer strong{display:block;color:var(--ink);font-weight:400;margin-bottom:6px}
   <div class="eyebrow">Contact</div>
   <h2>Tell us about your lot.</h2>
   <p class="lead">Free quote. 10% off for veterans, seniors, teachers, students and emergency services personnel.</p>
-  <p style="margin-top:32px;display:flex;gap:14px;flex-wrap:wrap">
-    <a class="btn" href="mailto:willardw@willardwilliamsarchitect.com">Email us</a>
+  <form id="cform" class="cform" novalidate>
+    <input name="name" placeholder="Your name" aria-label="Your name" autocomplete="name" required>
+    <input name="email" type="email" placeholder="Email" aria-label="Email" autocomplete="email" required>
+    <input name="phone" type="tel" placeholder="Phone (optional)" aria-label="Phone" autocomplete="tel">
+    <input name="address" placeholder="Property address (optional)" aria-label="Property address" autocomplete="street-address">
+    <select name="topic" aria-label="Topic"><option value="quote">Request a quote</option><option value="lot">Question about my lot</option><option value="general">Something else</option></select>
+    <textarea name="message" rows="4" placeholder="Tell us what you have in mind" aria-label="Message" required></textarea>
+    <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+    <button class="btn" type="submit">Send message</button>
+    <p id="cmsg" class="tnote" role="status" style="min-height:1.4em"></p>
+  </form>
+  <p style="margin-top:20px;display:flex;gap:14px;flex-wrap:wrap">
+    <a class="btn ghost" href="mailto:contact@pacificlivingsolutions.com">Email us</a>
     <a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a>
   </p>
 </div></section>
+<script>
+(function(){var f=document.getElementById("cform");if(!f)return;
+var API=window.LOTCHECK_API!=null?window.LOTCHECK_API:(location.protocol==="file:"?"http://127.0.0.1:8787":"");
+f.addEventListener("submit",function(e){e.preventDefault();var m=document.getElementById("cmsg"),b=f.querySelector("button"),d={};
+["name","email","phone","address","topic","message","website"].forEach(function(k){d[k]=f.elements[k].value});
+if(!d.name.trim()||!d.message.trim()||!/^\S+@\S+\.\S+$/.test(d.email)){m.textContent="Please add your name, a valid email and a short message.";return}
+b.disabled=true;m.textContent="Sending…";
+fetch(API+"/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)}).then(function(r){return r.json()}).then(function(j){
+if(j.ok){f.reset();m.textContent="Thanks. We got your message and will reply by email, usually within one business day."}else{m.textContent=j.error||"That didn't go through. Please email us instead."}b.disabled=false})
+.catch(function(){m.textContent="That didn't go through. Please email contact@pacificlivingsolutions.com instead.";b.disabled=false})});})();
+</script>
 
 <footer><div class="wrap">
   <div class="cols">
     <div><strong>Willard Williams Architect, PC</strong>Phoenix, OR 97535<br>Roseburg, OR &middot; Crescent City, CA<br>Oregon licensed architect ARI-13396<br>Construction: Trillium Design Build Company, Oregon CCB #257175</div>
-    <div><strong>Contact</strong>willardw@willardwilliamsarchitect.com<br>(425) 951-9459</div>
+    <div><strong>Contact</strong>contact@pacificlivingsolutions.com<br>(425) 951-9459</div>
     <div><strong>Explore</strong>Lineup &middot; Configure &middot; Engineering &middot; Ways to build &middot; Studio &middot; References &middot; <a href="/privacy" style="text-decoration:underline">Privacy</a></div>
   </div>
   <p class="note">Renderings are generated from our parametric ADU model; model names, sizes and finishes are subject to change. Pricing is by written quote. The lot check reads public parcel data for the counties it covers (Jackson, Curry, Klamath and Lake in Oregon, all of Washington, and Alameda, Contra Costa, Santa Clara, San Francisco, San Mateo, Sonoma and Sacramento in California so far), applies assumed setbacks and state-level ADU baselines, and is not a zoning determination. Confirm setbacks, utilities and zoning with your city or county.</p>
@@ -508,7 +538,7 @@ footer strong{display:block;color:var(--ink);font-weight:400;margin-bottom:6px}
   })()}catch(err){console.warn("library failed",err)}
 
   /* configurator */
-  var st={model:"PL 384",width:24,depth:16,roof:"shed",finish:"charcoal",dusk:true,panels:false,services:false,tier:"managed",perf:"high",door:"front"};
+  var st={model:"PL 384",width:24,depth:16,roof:"shed",finish:"charcoal",dusk:true,panels:false,services:false,tier:"kit",perf:"high",door:"front"};
   var LGI=null;try{LGI=LOGI.mount($("lgbox"))}catch(err){console.warn("logistics scene failed",err)}
   var FD=PRICE.PRICING.finance;$("f-down").value=FD.down;$("f-rate").value=FD.rate;$("f-yrs").value=FD.years;
   ["f-down","f-rate","f-yrs"].forEach(function(id){$(id).addEventListener("input",function(){update()})});
@@ -547,9 +577,9 @@ footer strong{display:block;color:var(--ink);font-weight:400;margin-bottom:6px}
     $("pparts").innerHTML=ok?[["Factory kit","unit"],["Design & engineering","design"],["Site & install","site"]].map(function(r){var v=es.parts[r[1]];return "<div><span>"+r[0]+"</span><b>"+(v?PRICE.usd(v):"Not included")+"</b></div>"}).join(""):"";
     $("pmid").textContent=ok?PRICE.usd(es.mid):"—";
     $("prng").textContent=ok?"Range "+PRICE.usd(es.low)+" to "+PRICE.usd(es.high):"Fix the size to see a price";
-    $("quote").href="mailto:willardw@willardwilliamsarchitect.com?subject="+encodeURIComponent("Quote request: "+st.model)+"&body="+encodeURIComponent("Please send a quote for "+st.model+", "+ftin(st.width)+" x "+ftin(st.depth)+", "+st.roof+" roof, "+(st.door==="west"?"west-end entry door, ":"front entry door, ")+st.finish+" finish. Property address: ");
+    $("quote").href="mailto:quotes@pacificlivingsolutions.com?subject="+encodeURIComponent("Quote request: "+st.model)+"&body="+encodeURIComponent("Please send a quote for "+st.model+", "+ftin(st.width)+" x "+ftin(st.depth)+", "+st.roof+" roof, "+(st.door==="west"?"west-end entry door, ":"front entry door, ")+st.finish+" finish. Property address: ");
     $("pmo").textContent=ok?PRICE.usd(PRICE.payment(es.mid,+$("f-down").value,+$("f-rate").value,+$("f-yrs").value))+" / month":"—";
-    $("pfine").textContent="Planning estimate based on local project costs, not a quote. Real prices depend on your site, and can run about 20% either way. Excludes utilities, permits and sales tax unless your tier says otherwise. Payment is simple fixed-rate amortisation on the amount after your down payment; it is not a loan offer and not financial advice.";
+    $("pfine").textContent="Planning estimate for permit-ready drawings and the factory panel kit delivered to the yard, not a quote. It can run about 20% either way. Excludes site work, foundation, crane and set, utilities, permits and sales tax.";
     $("plan").innerHTML=errs.length?"":PLAN.svg(p,{mep:st.services})+(st.services?PLAN.mepHtml():"")+PLAN.checkHtml(p);
     $("perfbox").innerHTML=errs.length?"":PERF.html(p,st.perf);
     if(LGI&&!errs.length)LGI.update(p);

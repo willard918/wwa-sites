@@ -161,7 +161,7 @@ footer .wrap{display:grid;gap:10px}
     <div class="eyebrow">Next</div>
     <h2>Keep it. Or ask me anything.</h2>
     <p class="lead">There is no price tag here on purpose: a fair number depends on your site, and I would rather give you a real one. Reply to the email we send, or reach me directly.</p>
-    <div class="reach"><a class="btn" href="mailto:willardw@willardwilliamsarchitect.com?subject=Lot%20review">Email me</a><a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a></div>
+    <div class="reach"><a class="btn" href="mailto:contact@pacificlivingsolutions.com?subject=Lot%20review">Email me</a><a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a></div>
   </div>
   <div id="sp-tz"></div>
 </div></section>
@@ -1452,7 +1452,7 @@ global.ADU = { walls: walls, validate: validate, panelize: panelize, quantities:
           msg.innerHTML = d.sent ? "Sent. Check your inbox for <b>" + esc(ctx.unit.name) + "</b>." : "Saved. Email sending is switched off in this prototype, so nothing has left the building yet. Your note is ready in the outbox.";
           f.querySelector(".tz-r").style.display = "none";
         })
-        .catch(function () { msg.textContent = "The server is offline. Email " + "willardw@willardwilliamsarchitect.com" + " and we'll send it by hand."; msg.className = "tz-m bad"; })
+        .catch(function () { msg.textContent = "The server is offline. Email " + "contact@pacificlivingsolutions.com" + " and we'll send it by hand."; msg.className = "tz-m bad"; })
         .then(function () { btn.disabled = false; btn.textContent = "Email it to me"; });
     });
   }
@@ -1470,7 +1470,7 @@ if (!form || !input || !status) return;
 
 var API = window.LOTCHECK_API != null ? window.LOTCHECK_API :
   (location.protocol === "file:" ? "http://127.0.0.1:8787" : "");
-var MAIL = "willardw@willardwilliamsarchitect.com";
+var MAIL = "contact@pacificlivingsolutions.com";
 var NS = "http://www.w3.org/2000/svg";
 
 function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }

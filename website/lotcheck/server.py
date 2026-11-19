@@ -592,9 +592,9 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
-        if u.path != "/api/tease":
+        if u.path not in ("/api/tease", "/api/contact"):
             return self._send(404, {"ok": False, "error": "not found"})
-        if self._limited("tease", 12):
+        if self._limited("contact" if u.path == "/api/contact" else "tease", 8 if u.path == "/api/contact" else 12):
             return self._send(429, {"ok": False, "error": "Too many requests. Try again later."})
         try:
             n = int(self.headers.get("Content-Length", "0"))
@@ -603,6 +603,9 @@ class H(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(n).decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
             return self._send(400, {"ok": False, "error": "Bad request."})
+        if u.path == "/api/contact":
+            code, out = outreach.handle_contact(body, self._ip())
+            return self._send(code, out)
         code, out = outreach.handle_tease(body, self._ip(), lotcheck)
         self._send(code, out)
 
