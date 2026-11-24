@@ -207,6 +207,33 @@ def cmd_recheck(a):
     print(f"{done} rechecked; {sum(1 for x in letters.values() if x.get('dropped'))} dropped, {sum(1 for x in letters.values() if not x.get('dropped'))} kept")
 
 
+def cmd_labels(a):
+    """Mailing labels for a batch: Avery 5160 / 8160 (30 per US-letter sheet, 1 x 2-5/8 in), in the same order as the letters so label n goes on letter n.
+    The small grey code in the corner is the letter's own code (it matches the QR URL), to pair a label with its letter."""
+    letters = load()
+    codes = [c for c, v in letters.items() if (v.get("batch") == a.batch if a.batch else True) and not v.get("dropped")]
+    if not codes:
+        print("no letters"); sys.exit(1)
+    OUT.mkdir(parents=True, exist_ok=True)
+    cells = []
+    for c in codes:
+        v = letters[c]
+        name = E(v.get("name") or "Current Resident")
+        cells.append(f'<div class="lb"><div class="a">{name}<br>{E(v["address"]).upper()}<br>{E(v["city"]).upper()}, {E(v["state"])} {E(v.get("zip") or "")}</div><i>{c}</i></div>')
+    sheets = []
+    for i in range(0, len(cells), 30):
+        chunk = cells[i:i + 30] + ['<div class="lb"></div>'] * (30 - len(cells[i:i + 30]))
+        sheets.append('<section class="sh">' + "".join(chunk) + "</section>")
+    css = ("@page{size:8.5in 11in;margin:0}*{box-sizing:border-box;margin:0}body{font:10pt/1.25 Arial,Helvetica,sans-serif;color:#000}"
+           ".sh{width:8.5in;height:11in;padding:.5in .1875in 0;display:grid;grid-template-columns:repeat(3,2.625in);grid-auto-rows:1in;column-gap:.125in;row-gap:0;page-break-after:always;break-after:page}"
+           ".lb{position:relative;padding:.14in .12in 0 .2in;overflow:hidden}.lb .a{font-size:10pt}.lb i{position:absolute;right:.08in;bottom:.04in;font:normal 5.5pt Arial;color:#888;letter-spacing:.06em}")
+    f = OUT / "labels.html"
+    f.write_text(f"<!doctype html><html><head><meta charset=utf-8><title>Labels</title><style>{css}</style></head><body>{''.join(sheets)}</body></html>", encoding="utf-8")
+    pdf = OUT / (a.pdf or "labels-avery5160.pdf")
+    edge("--virtual-time-budget=8000", "--no-pdf-header-footer", f"--print-to-pdf={pdf}", f.as_uri(), timeout=300)
+    print(f"{len(codes)} labels on {len(sheets)} sheets -> {pdf}")
+
+
 def cmd_hero(a):
     """Render the PL 384 at dusk with ADU.renderStill inside headless Edge and keep the JPEG."""
     src = ROOT / "src"
@@ -431,7 +458,8 @@ if __name__ == "__main__":
     c.add_argument("--min-acres", type=float, default=0.17); c.add_argument("--max-acres", type=float, default=0.75); c.add_argument("--seed", type=int, default=7); c.add_argument("--batch", default="draft-1")
     x = sp.add_parser("csv"); x.add_argument("file"); x.add_argument("--batch", default="csv-1")
     sp.add_parser("hero")
+    lb = sp.add_parser("labels"); lb.add_argument("--batch"); lb.add_argument("--pdf")
     rc = sp.add_parser("recheck"); rc.add_argument("--limit", type=int)
     b = sp.add_parser("build"); b.add_argument("--base", default="https://willardwilliamsarchitect.com"); b.add_argument("--limit", type=int); b.add_argument("--batch"); b.add_argument("--proof", action="store_true"); b.add_argument("--pdf", help="output file name inside data/letters (default letters.pdf)"); b.add_argument("--letters", help="read a different letters.json (for proofs)")
     a = ap.parse_args()
-    {"candidates": cmd_candidates, "csv": cmd_csv, "hero": cmd_hero, "build": cmd_build, "recheck": cmd_recheck}[a.cmd](a)
+    {"candidates": cmd_candidates, "csv": cmd_csv, "hero": cmd_hero, "build": cmd_build, "recheck": cmd_recheck, "labels": cmd_labels}[a.cmd](a)
