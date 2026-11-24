@@ -86,7 +86,7 @@ function render(d) {
     f.results.forEach(function (r) {
       var row = el("div", "lc-row" + (r.fits ? " ok" : " no"));
       row.appendChild(el("span", "", r.model + "  " + r.size_ft[0] + "′ × " + r.size_ft[1] + "′"));
-      row.appendChild(el("span", "", r.fits ? "Fits, " + r.margin_ft + "′ to spare" + (r.size_ok === false ? " · may exceed size cap" : "") : "Does not fit"));
+      row.appendChild(el("span", "", r.fits ? (r.margin_ft < 1 ? "Tight fit, " : "Fits, ") + r.margin_ft + "′ to spare" + (r.size_ok === false ? " · may exceed size cap" : "") : "Does not fit"));
       fl.appendChild(row);
     });
     info.appendChild(fl);

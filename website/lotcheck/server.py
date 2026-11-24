@@ -9,6 +9,7 @@ Only Jackson County, OR has a parcel adapter so far; everywhere else degrades to
 No owner names are read or returned.
 """
 import argparse
+import io
 import json
 import math
 import os
@@ -609,10 +610,53 @@ class H(BaseHTTPRequestHandler):
         code, out = outreach.handle_tease(body, self._ip(), lotcheck)
         self._send(code, out)
 
+    def do_HEAD(self):  # monitors and crawlers use HEAD: run GET, send the headers only
+        real, buf = self.wfile, io.BytesIO()
+        self.wfile = buf
+        try:
+            self.do_GET()
+        finally:
+            self.wfile = real
+        sep = bytes([13, 10, 13, 10])
+        real.write(buf.getvalue().split(sep, 1)[0] + sep)
+
+    def _text(self, code, body, ctype, cache="public, max-age=3600"):
+        b = body if isinstance(body, bytes) else body.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Cache-Control", cache)
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def _staging(self):
+        h = (self.headers.get("Host") or "").split(":")[0].lower()
+        return h.endswith("pacificnestadu.com") or h in ("127.0.0.1", "localhost")
+
+    def _notfound(self):
+        page = ("<!doctype html><html lang=en><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=robots content=noindex><title>Page not found</title>"
+                "<body style='background:#0b0a08;color:#f1ece1;font:18px/1.6 Georgia,serif;padding:14vh 24px;max-width:560px;margin:0 auto'>"
+                "<h1 style='font-weight:300;font-size:40px;line-height:1.1'>That page is not here.</h1>"
+                "<p style='color:#8f897b'>Try the <a href='/' style='color:#f1ece1'>home page</a>, or call (425) 951-9459.</p></body></html>")
+        self._text(404, page, "text/html; charset=utf-8", "no-store")
+
     def do_GET(self):
         u = urllib.parse.urlparse(self.path)
         if u.path == "/api/health":
             return self._send(200, {"ok": True})
+        if u.path == "/robots.txt":
+            if self._staging():
+                return self._text(200, "\n".join(["User-agent: *", "Disallow: /", ""]), "text/plain; charset=utf-8")
+            return self._text(200, "\n".join(["User-agent: *", "Allow: /", "Disallow: /l/", "Disallow: /api/", "Sitemap: https://willardwilliamsarchitect.com/sitemap.xml", ""]), "text/plain; charset=utf-8")
+        if u.path == "/sitemap.xml":
+            today = time.strftime("%Y-%m-%d")
+            return self._text(200, '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                              f'<url><loc>https://willardwilliamsarchitect.com/</loc><lastmod>{today}</lastmod></url>'
+                              f'<url><loc>https://willardwilliamsarchitect.com/privacy</loc><lastmod>{today}</lastmod></url></urlset>', "application/xml; charset=utf-8")
+        if u.path == "/og.jpg":
+            f = Path(__file__).resolve().parent.parent / "assets" / "og.jpg"
+            if f.exists():
+                return self._text(200, f.read_bytes(), "image/jpeg", "public, max-age=86400")
         if u.path in ("/", "/index.html"):  # the built single-file site, so page and API share an origin
             f = Path(__file__).resolve().parent.parent / "index.html"
             if not f.exists():
@@ -653,7 +697,9 @@ class H(BaseHTTPRequestHandler):
                 outreach.log_event("letter_open", self._ip(), code=code, known=bool(info))
             return self._html("splash.html", "<script>window.LETTER=" + json.dumps(info).replace("<", "\\u003c") + ";</script>")
         if u.path != "/api/lotcheck":
-            return self._send(404, {"ok": False, "error": "not found"})
+            if u.path.startswith("/api/"):
+                return self._send(404, {"ok": False, "error": "not found"})
+            return self._notfound()
         ip = self._ip()
         now = time.time()
         _hits[ip] = [t for t in _hits.get(ip, []) if now - t < 60] + [now]

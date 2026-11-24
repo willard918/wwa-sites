@@ -1,11 +1,24 @@
 # Plain VPS: Caddy gets and renews HTTPS certificates itself once each domain's A record points here.
-# Staging / ADU brand domain (live)
+(secure) {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:8787
+}
+
+# Staging / ADU brand domain (live). Kept out of search engines so it never competes with the main domain.
 pacificnestadu.com, www.pacificnestadu.com {
-	encode gzip
-	reverse_proxy 127.0.0.1:8787
+	header X-Robots-Tag "noindex, nofollow"
+	import secure
 }
-# Main site. Add only after the A records for @ and www move to this server (certificate requests fail until then).
-willardwilliamsarchitect.com, www.willardwilliamsarchitect.com {
-	encode gzip
-	reverse_proxy 127.0.0.1:8787
-}
+
+# Main site: UNCOMMENT only after the A records for @ and www move to this server (certificate requests fail until then).
+# willardwilliamsarchitect.com, www.willardwilliamsarchitect.com {
+#	import secure
+# }
