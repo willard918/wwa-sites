@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1000" height="1000">
+  <title>Willard Williams Architect seal (for a 1-5/8 in round embosser)</title>
+  <defs>
+    <path id="top" d="M 11,50 A 39,39 0 0 1 89,50"/>
+    <path id="bot" d="M 8,50 A 42,42 0 0 0 92,50"/>
+  </defs>
+  <rect width="100" height="100" fill="#fff"/>
+  <g fill="none" stroke="#000" stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="50" cy="50" r="48" stroke-width="1.6"/>
+    <circle cx="50" cy="50" r="30.5" stroke-width="1.2"/>
+  </g>
+  <g font-family="Georgia, 'Times New Roman', serif" font-weight="700" fill="#000" text-anchor="middle">
+    <text font-size="9" letter-spacing="1.6"><textPath href="#top" startOffset="50%">WILLARD WILLIAMS</textPath></text>
+    <text font-size="7.8" letter-spacing="1.5"><textPath href="#bot" startOffset="50%">ARCHITECT · OREGON</textPath></text>
+  </g>
+  <!-- the unit: a shed roof on a glazed box -->
+  <g fill="#000" stroke="#000" stroke-linejoin="round" stroke-linecap="round">
+    <polygon points="29,45.5 73,39.5 73,43.6 29,49.6" stroke-width="0.6"/>
+    <g fill="none" stroke-width="1.5">
+      <rect x="33" y="49.6" width="36" height="13.4"/>
+      <line x1="45" y1="49.6" x2="45" y2="63"/>
+      <line x1="57" y1="49.6" x2="57" y2="63"/>
+      <line x1="26" y1="63" x2="76" y2="63"/>
+    </g>
+  </g>
+  <g fill="#000"><circle cx="50" cy="26.5" r="0"/></g>
+</svg>
