@@ -2323,6 +2323,16 @@ function drawPlan(host, f) {
   function poly(arr) { return arr.map(P).join(" "); }
   var s = svg("svg", { viewBox: "0 0 " + W.toFixed(1) + " " + H.toFixed(1), role: "img", "aria-label": "Lot plan with setback area and placed unit" });
   s.appendChild(svg("polygon", { points: poly(pts), fill: "#17140f", stroke: "#f1ece1", "stroke-width": (W / 300).toFixed(2) }));
+  var T = f.terrain || {};
+  [["caution_cells", "rgba(214,170,60,.30)"], ["steep_cells", "rgba(190,60,50,.55)"]].forEach(function (g) {   /* ground slope: amber = needs earthwork, red = too steep to build */
+    var cells = T[g[0]]; if (!cells || !cells.length) return;
+    var d2 = "";
+    cells.forEach(function (c) {
+      var a = P([c[0], c[3]]).split(","), w = (c[2] - c[0]).toFixed(1), h = (c[3] - c[1]).toFixed(1);
+      d2 += "M" + a[0] + " " + a[1] + "h" + w + "v" + h + "h-" + w + "z";
+    });
+    s.appendChild(svg("path", { d: d2, fill: g[1], stroke: "none", "clip-path": "" }));
+  });
   if (f.envelope_cells && f.envelope_cells.length) {
     var dd = "";
     f.envelope_cells.forEach(function (c) {
@@ -2360,7 +2370,8 @@ function drawPlan(host, f) {
   });
   host.appendChild(chips);
   if (first) pick(first[0], first[1]); else { unit.setAttribute("points", ""); }
-  var leg = el("p", "lc-note", "Solid line: lot. Shaded: area left after assumed setbacks and a " + f.assumptions.building_clear_ft + "′ gap from buildings. Grey: existing buildings from satellite-derived footprints, which can be out of date." + (f.buildings_note ? " " + f.buildings_note : ""));
+  var leg = el("p", "lc-note", "Solid line: lot. Shaded: area left after assumed setbacks and a " + f.assumptions.building_clear_ft + "′ gap from buildings. Grey: existing buildings from satellite-derived footprints, which can be out of date." + (f.buildings_note ? " " + f.buildings_note : "") +
+    (T.checked ? " Red: ground steeper than " + T.block_pct + "% (not buildable for a prefab unit). Amber: 10 to " + T.block_pct + "% (needs earthwork). From USGS elevation data on a 10 ft grid; a survey is still needed." : (T.note ? " " + T.note : "")));
   host.appendChild(leg);
 }
 })();

@@ -114,10 +114,24 @@ def verdict(state, kind, parcel, fit):
         reasons.append("City zoning is not connected yet, so the zone and its limits were not checked.")
     if fit is not None:
         fits = [r["model"] for r in fit["results"] if r["fits"]]
+        terr = fit.get("terrain") or {}
+        steep = [r["model"] for r in fit["results"] if r.get("slope_blocked")]
+        if terr.get("checked") is False:
+            status = "review"
+            reasons.append(terr.get("note") or "Ground slope could not be checked, so the fit ignores it.")
         if not fits:
             status = "review"
-            reasons.append("None of our units fit inside the assumed setbacks. A smaller unit or a site survey may change that.")
+            if steep:
+                reasons.append("The ground here is too steep, or has no drivable route in from the street, for a prefab unit (we look for gentle ground, under about 15% average slope, and a route under 15%). "
+                               "None of our units are suggested for this lot as it stands. A site survey and a design made for the slope could still work.")
+            else:
+                reasons.append("None of our units fit inside the assumed setbacks. A smaller unit or a site survey may change that.")
         else:
+            if steep:
+                reasons.append(f"{', '.join(steep)} would fit on flat ground but the slope rules " + ("it" if len(steep) == 1 else "them") + " out.")
+            gs = [r["ground"]["mean_slope_pct"] for r in fit["results"] if r["fits"] and r.get("ground")]
+            if gs:
+                reasons.append(f"Ground slope under the suggested spot is about {max(gs):g}% (USGS elevation data, about 10 ft grid). A survey is still needed.")
             reasons.append("Fits with assumed setbacks: " + ", ".join(fits) + ".")
             if fit.get("buildings"):
                 reasons.append(f"{len(fit['buildings'])} existing building(s) were taken from satellite-derived footprints and kept {fit['assumptions']['building_clear_ft']} ft clear. That data can be out of date, for example for recent rebuilds.")

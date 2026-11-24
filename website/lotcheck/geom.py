@@ -189,7 +189,7 @@ def obstacle_dist(pt, obs, limit):
     return m
 
 
-def fit_rect(poly, w, d, setbacks, street_pt=None, budget=250000, seconds=2.5, obstacles=None, obs_clear=0.0):
+def fit_rect(poly, w, d, setbacks, street_pt=None, budget=250000, seconds=2.5, obstacles=None, obs_clear=0.0, terrain=None):
     """Find a w x d rectangle (metres) inside `poly` keeping each edge's setback.
     Returns {corners, clearance, angle} or None. Prefers the spot farthest from street_pt (rear yard).
     Large lots are searched more coarsely and every search stops after `seconds`.
@@ -250,6 +250,8 @@ def fit_rect(poly, w, d, setbacks, street_pt=None, budget=250000, seconds=2.5, o
                                 clearance = min(clearance, cl)
                             if not ok:
                                 break
+                    if ok and terrain is not None and not terrain.rect_ok(corners):
+                        ok = False
                     if ok:
                         cx = sum(c[0] for c in corners) / 4
                         cy = sum(c[1] for c in corners) / 4
@@ -262,7 +264,7 @@ def fit_rect(poly, w, d, setbacks, street_pt=None, budget=250000, seconds=2.5, o
     return best
 
 
-def envelope_cells(poly, setbacks, obstacles=None, obs_clear=0.0):
+def envelope_cells(poly, setbacks, obstacles=None, obs_clear=0.0, terrain=None):
     """Buildable area as merged horizontal runs [x0, y0, x1, y1] (metres): every cell centre is inside the lot
     and at least each edge's setback away from it. Correct for any lot shape, including flag lots."""
     poly = ensure_ccw(poly)
@@ -279,6 +281,8 @@ def envelope_cells(poly, setbacks, obstacles=None, obs_clear=0.0):
         start = None
         while x < maxx:
             ok = _clear((x, y), poly, es, setbacks) >= 0 and not (obs and obstacle_dist((x, y), obs, obs_clear) < obs_clear)
+            if ok and terrain is not None and not terrain.cell_ok(x, y):
+                ok = False
             if ok and start is None:
                 start = x - cell / 2
             if not ok and start is not None:

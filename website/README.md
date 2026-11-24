@@ -57,11 +57,13 @@ Address -> parcel -> state ADU baseline -> which units fit -> a report with an S
 
 **Verified working (2026-11-03):** Phoenix-area OR lot (Eagle Point city limits), unincorporated Jackson Co. lot (Trail, zoning WR), Del Norte CA and King WA addresses (state baseline, "not enough data"), an Idaho address (outside service area), and junk input. Geometry unit tests pass. Results arrive in under about 1.5 s per lot after the first call (the first call took up to a few seconds on a large lot).
 
+**Ground slope (added 2026-11-24):** `lotcheck/terrain.py` samples USGS 3DEP elevation (1 m lidar, free, one batched request per 400 points) on a ~10 ft grid over the lot, smooths it and computes slope. A unit is only placed where the average slope under it is <= 15%, no more than 5% of its footprint is steeper than 20%, and the spot can be reached from the street frontage over ground <= 15% (flood-fill from the frontage cells; assumes the street side is right). Limits live in `terrain.THRESHOLDS` and are placeholders to confirm with the builder. If the elevation service fails the result is 'Needs review' and letters are not generated. Skyview Dr, Medford (median slope 31%, 106 ft of fall) is ruled out; flat Talent lots still fit. Offline tests: `python lotcheck/test_terrain.py`. `python outreach/letters.py recheck` re-runs every stored letter with the slope check and marks lots that no longer qualify `dropped` (not printed, no landing page). `letters.py csv` refuses steep lots.
+
 **Data sources:** Census geocoder; Jackson County GIS `Property/Taxlots2` (weekly refresh; owner names are never read or returned).
 
 **Assumed, not verified (all shown in the report):**
 - Setbacks: front 20 ft, side/rear 5 ft (OR, WA) or 4 ft (CA). These are placeholders, not code lookups. The street side is the lot edge nearest the geocoded point; for address-record fallbacks the street is unknown, so 20 ft is applied to every edge (cautious). Corner lots' second street side is not detected.
-- Existing buildings, easements, slopes, flood/fire zones and utilities are not in the data, so the unit may collide with a house that is not shown.
+- Existing buildings, easements, flood/fire zones and utilities are not in the data, so the unit may collide with a house that is not shown.
 - Oregon's ADU mandate covers cities over 2,500 residents; the city's population is not checked. County thresholds and rural rules (e.g. SB 391) were not verified.
 - California section numbers and review timelines and the Washington size rules were not verified; only the points listed in `rules.py` were read from search results (see its sources). Re-verify before relying on them.
 - Land-use class labels (100/101/400/401) follow the Oregon DOR scheme from memory; other codes show their raw number and give "Needs review".

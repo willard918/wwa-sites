@@ -31,6 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "outreach"))
 import geom  # noqa: E402
 import rules  # noqa: E402
+import terrain as terrain_mod  # noqa: E402  (USGS 3DEP ground slope)
 import outreach  # noqa: E402  (tease email, click tracking, letter codes)
 
 UA = "lotcheck-prototype/0.1"
@@ -502,7 +503,14 @@ def lotcheck(address):
         clear_m = BUILDING_CLEAR_FT * geom.FT
         if binfo is not None and not bl:
             bnote = "No building footprint was found on this lot in the satellite-derived data (which can be out of date), so the fit ignores existing buildings."
-        cells = geom.envelope_cells(poly, sbs, obstacles=bl, obs_clear=clear_m)
+        terrain, tnote = None, None
+        try:
+            terrain = terrain_mod.Terrain(poly, lon0, lat0, cx, cy)
+            if front_edge is not None:
+                terrain.set_street(front_edge)
+        except Exception as e:
+            terrain, tnote = None, f"Ground slope could not be checked ({str(e)[:70]}), so the fit below ignores it."
+        cells = geom.envelope_cells(poly, sbs, obstacles=bl, obs_clear=clear_m, terrain=terrain)
         primary_sf = round(max(binfo["sqft"])) if binfo and binfo["sqft"] else None
         if state == "CA":
             cap_sf = CA_ADU_FLOOR_SF   # California bars cities from capping a detached ADU below this; the city's own cap may be higher
@@ -513,22 +521,34 @@ def lotcheck(address):
             t0 = time.time()
             mw, md = m["w"] * geom.FT, m["d"] * geom.FT
             # first look for a spot with a ~2 ft margin to spare, then accept the bare minimum
-            r = (geom.fit_rect(poly, mw, md, [x + 0.6 for x in sbs], street_pt=street_pt, obstacles=bl, obs_clear=clear_m)
-                 or geom.fit_rect(poly, mw, md, sbs, street_pt=street_pt, obstacles=bl, obs_clear=clear_m))
+            r = (geom.fit_rect(poly, mw, md, [x + 0.6 for x in sbs], street_pt=street_pt, obstacles=bl, obs_clear=clear_m, terrain=terrain)
+                 or geom.fit_rect(poly, mw, md, sbs, street_pt=street_pt, obstacles=bl, obs_clear=clear_m, terrain=terrain))
+            slope_blocked, ground = False, None
+            if terrain is not None:
+                if r:
+                    mean_pct, _share, relief = terrain.rect_stats(r["corners"])
+                    ground = {"mean_slope_pct": round(mean_pct, 1), "relief_ft": round(relief, 1)}
+                else:   # would it fit on flat ground? then the slope (or no route in) is what stops it
+                    slope_blocked = bool(geom.fit_rect(poly, mw, md, sbs, street_pt=street_pt, obstacles=bl, obs_clear=clear_m, seconds=1.0))
             results.append({"model": m["name"], "size_ft": [m["w"], m["d"]], "sf": m["w"] * m["d"], "size_ok": m["w"] * m["d"] <= cap_sf, "fits": bool(r),
+                            "slope_blocked": slope_blocked, "ground": ground,
                             "placement": [pt_ft(c) for c in r["corners"]] if r else None,
                             "margin_ft": round(r["clearance"] * M2FT, 1) if r else None,
                             "ms": int((time.time() - t0) * 1000)})
         note = ("Assumed setbacks, not code lookups. The street side is the lot edge nearest the address point; a corner lot's second street side "
-                "is not detected. Existing buildings come from satellite-derived footprints and can be out of date. Easements, slopes and utilities are not known.")
+                "is not detected. Existing buildings come from satellite-derived footprints and can be out of date. Easements and utilities are not known.")
         if not street_known:
             note = ("Assumed setbacks, not code lookups. The street side could not be located for this address, so the larger front setback "
-                    "was applied to every edge (cautious). Existing buildings come from satellite-derived footprints and can be out of date. Easements, slopes and utilities are not known.")
+                    "was applied to every edge (cautious). Existing buildings come from satellite-derived footprints and can be out of date. Easements and utilities are not known.")
         fit = {
             "assumptions": {"front_ft": sb["front"], "side_rear_ft": sb["side_rear"], "street_known": street_known, "note": note,
                             "building_clear_ft": BUILDING_CLEAR_FT, "typical_cap_sf": cap_sf, "primary_sf": primary_sf},
             "buildings": [[pt_ft(p) for p in r] for r in bl] if binfo is not None else None, "buildings_note": bnote,
             "ref": {"lon0": lon0, "lat0": lat0, "cx": cx, "cy": cy},   # lets a QA script put the local plan back on a map
+            "terrain": ({"checked": True, "block_pct": terrain_mod.THRESHOLDS["block_pct"], "access_pct": terrain_mod.THRESHOLDS["access_pct"],
+                         "steep_cells": terrain.cells("block"), "caution_cells": terrain.cells("caution"),
+                         "route_checked": terrain.reach is not None,
+                         "source": "USGS 3DEP elevation, about 10 ft grid, smoothed"} if terrain is not None else {"checked": False, "note": tnote}),
             "results": results, "lot": [pt_ft(p) for p in poly], "envelope_cells": [[round(v * M2FT, 1) for v in c] for c in cells],
             "front_edge": [pt_ft(front_edge[0]), pt_ft(front_edge[1])] if front_edge else None,
             "street_pt": pt_ft(street_pt) if street_pt else None,

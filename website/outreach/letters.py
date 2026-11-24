@@ -70,7 +70,10 @@ def entry_from_check(res, addr, city, state, zipc, name=None, batch="draft"):
     for r in results:  # the biggest that fits with at least a foot to spare (results are listed smallest first); a 0.1 ft "fit" is not worth a claim in print
         if r["fits"] and r["margin_ft"] is not None and r["margin_ft"] >= float(os.environ.get("WWA_MIN_MARGIN_FT", "1.0")) and r.get("size_ok", True):
             best = r
+    terr = (fit or {}).get("terrain") or {}
+    ground = next((r.get("ground") for r in results if best and r["model"] == best["model"]), None)
     return {"address": addr, "city": city, "state": state, "zip": zipc, "name": name, "batch": batch, "created": time.strftime("%Y-%m-%d"),
+            "terrain_ok": bool(terr.get("checked")), "slope_blocked": any(r.get("slope_blocked") for r in results), "slope_pct": ground["mean_slope_pct"] if ground else None,
             "verdict": v.get("headline"), "status": v.get("status"), "lot_sf": p.get("area_sf") if p else None,
             "best": {"model": best["model"], "size": best["size_ft"], "margin": best["margin_ft"]} if best else None,
             "lot": fit}
@@ -131,8 +134,13 @@ def cmd_csv(a):
             if not addr:
                 continue
             res = server.lotcheck(f"{addr}, {city}, {st} {z}".strip(", "))
+            ent = entry_from_check(res if res.get("ok") else {"verdict": {}}, addr, city, st, z, name=(r.get("name") or "").strip() or None, batch=a.batch)
+            if res.get("ok") and res.get("fit") and not ent["terrain_ok"]:
+                print("NOT GENERATED (ground slope could not be checked):", addr); continue
+            if ent["slope_blocked"] and not ent["best"]:
+                print("NOT GENERATED (too steep or no route in for a prefab unit):", addr); continue
             code = new_code(letters)
-            letters[code] = entry_from_check(res if res.get("ok") else {"verdict": {}}, addr, city, st, z, name=(r.get("name") or "").strip() or None, batch=a.batch)
+            letters[code] = ent
             print(code, addr, "-", letters[code]["verdict"] or res.get("error"))
     save(letters)
 
@@ -141,6 +149,53 @@ def cmd_csv(a):
 def edge(*args, timeout=180):
     return subprocess.run([EDGE, "--headless=new", "--disable-gpu-sandbox", "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--no-first-run", *args],
                           capture_output=True, text=True, timeout=timeout)
+
+
+def cmd_recheck(a):
+    """Re-run the lot check (now with ground slope) on every stored letter. Entries that no longer qualify are marked `dropped`
+    and are neither printed nor shown on the splash page. Writes the result back to letters.json (backup kept next to it)."""
+    import server
+    from concurrent.futures import ThreadPoolExecutor
+    letters = load()
+    LETTERS.with_name("letters.pre-recheck.json").write_text(json.dumps(letters), encoding="utf-8")
+    todo = [c for c, v in letters.items() if not v.get("rechecked")]
+    if a.limit:
+        todo = todo[:a.limit]
+
+    def one(code):
+        v = letters[code]
+        try:
+            res = server.lotcheck(f"{v['address']}, {v['city']}, {v['state']} {v.get('zip') or ''}".strip())
+        except Exception as e:
+            return code, None, str(e)[:60]
+        return code, res, None
+    done = 0
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        for code, res, err in ex.map(one, todo):
+            v = letters[code]
+            if err or not res.get("ok") or not res.get("fit"):
+                v["dropped"] = "check failed: " + (err or res.get("error", "no fit data"))[:60]
+                v.pop("rechecked", None)   # run recheck again to retry these
+                continue
+            else:
+                new = entry_from_check(res, v["address"], v["city"], v["state"], v.get("zip") or "", name=v.get("name"), batch=v.get("batch"))
+                new["created"] = v.get("created")
+                if v.get("area"):
+                    new["area"] = v["area"]
+                v.update(new)
+                if not new["terrain_ok"]:
+                    v["dropped"] = "ground slope could not be checked"
+                elif new["status"] != "likely" or not new["best"]:
+                    v["dropped"] = "slope or access rules out every unit" if new["slope_blocked"] else "no longer qualifies"
+                else:
+                    v.pop("dropped", None)
+            v["rechecked"] = time.strftime("%Y-%m-%d")
+            done += 1
+            if done % 10 == 0:
+                save(letters)
+                print(f"  {done}/{len(todo)}, {sum(1 for x in letters.values() if x.get('dropped'))} dropped", flush=True)
+    save(letters)
+    print(f"{done} rechecked; {sum(1 for x in letters.values() if x.get('dropped'))} dropped, {sum(1 for x in letters.values() if not x.get('dropped'))} kept")
 
 
 def cmd_hero(a):
@@ -185,6 +240,14 @@ def lot_svg(rec):
         d += f"M{x:.1f} {y:.1f}h{c[2] - c[0]:.1f}v{c[3] - c[1]:.1f}h-{c[2] - c[0]:.1f}z"
     if d:
         o.append(f'<path d="{d}" fill="#e9e4d8" stroke="none"/>')
+    o.append(f'<clipPath id="lotclip"><polygon points="{" ".join(P(q) for q in pts)}"/></clipPath>')   # slope cells are sampled on a padded grid: clip them to the lot
+    for key, col in (("caution_cells", "#f0dca0"), ("steep_cells", "#b9453a")):   # ground slope: pale = needs earthwork, dark red = too steep
+        d2 = ""
+        for c in (f.get("terrain") or {}).get(key) or []:
+            x, y = c[0] - minx + pad, maxy - c[3] + pad
+            d2 += f"M{x:.1f} {y:.1f}h{c[2] - c[0]:.1f}v{c[3] - c[1]:.1f}h-{c[2] - c[0]:.1f}z"
+        if d2:
+            o.append(f'<path d="{d2}" fill="{col}" fill-opacity=".55" stroke="none" clip-path="url(#lotclip)"/>')
     for b in f.get("buildings") or []:   # existing buildings (satellite-derived footprints)
         o.append(f'<polygon points="{" ".join(P(q) for q in b)}" fill="#8f897b" stroke="#0b0a08" stroke-width="{W / 400:.2f}"/>')
     best = rec.get("best")
@@ -253,7 +316,8 @@ def letter_html(code, rec, base, hero_uri):
     if best and sf:
         find = (f"The county shows your lot at about <b>{money(sf)} square feet</b>. Using the state's rules, cautious setbacks and the buildings already on the lot, "
                 f"a <b>{area} square foot</b> backyard home looks like it could fit. "
-                f"The drawing shows where. It is an estimate from public records.")
+                f"The drawing shows where. It is an estimate from public records."
+                + (f" The ground there is gentle, about {rec['slope_pct']:g}% slope on public elevation data." if rec.get("slope_pct") is not None else ""))
     elif sf:
         find = f"The county shows your lot at about <b>{money(sf)} square feet</b>. It is a close call, and I would be glad to look at it properly."
     else:
@@ -281,7 +345,7 @@ def letter_html(code, rec, base, hero_uri):
 
 def cmd_build(a):
     letters = json.loads(Path(a.letters).read_text(encoding="utf-8")) if a.letters else load()
-    codes = [c for c, v in letters.items() if v.get("batch") == a.batch] if a.batch else list(letters)
+    codes = [c for c, v in letters.items() if (v.get("batch") == a.batch if a.batch else True) and not v.get("dropped")]
     if a.limit:
         codes = codes[:a.limit]
     if not codes:
@@ -316,6 +380,7 @@ if __name__ == "__main__":
     c.add_argument("--min-acres", type=float, default=0.17); c.add_argument("--max-acres", type=float, default=0.75); c.add_argument("--seed", type=int, default=7); c.add_argument("--batch", default="draft-1")
     x = sp.add_parser("csv"); x.add_argument("file"); x.add_argument("--batch", default="csv-1")
     sp.add_parser("hero")
+    rc = sp.add_parser("recheck"); rc.add_argument("--limit", type=int)
     b = sp.add_parser("build"); b.add_argument("--base", default="https://willardwilliamsarchitect.com"); b.add_argument("--limit", type=int); b.add_argument("--batch"); b.add_argument("--proof", action="store_true"); b.add_argument("--letters", help="read a different letters.json (for proofs)")
     a = ap.parse_args()
-    {"candidates": cmd_candidates, "csv": cmd_csv, "hero": cmd_hero, "build": cmd_build}[a.cmd](a)
+    {"candidates": cmd_candidates, "csv": cmd_csv, "hero": cmd_hero, "build": cmd_build, "recheck": cmd_recheck}[a.cmd](a)
