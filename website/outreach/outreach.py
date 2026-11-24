@@ -365,7 +365,7 @@ def letter_public(code):
     if not CODE_RE.match(code or ""):
         return None
     r = load_letters().get(code)
-    if not r or r.get("dropped"):   # a lot ruled out (for example by slope) never gets its own page: the generic splash shows instead
+    if not r or r.get("dropped") or not (((r.get("lot") or {}).get("terrain") or {}).get("checked")):   # never show a lot whose ground slope was not checked   # a lot ruled out (for example by slope) never gets its own page: the generic splash shows instead
         return None
     return {"code": code, "address": r["address"], "city": r.get("city"), "state": r.get("state"), "zip": r.get("zip"), "lot": r.get("lot"),
             "best": r.get("best"), "verdict": r.get("verdict"), "sf": r.get("lot_sf"), "area": r.get("area")}

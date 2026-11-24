@@ -56,6 +56,12 @@ def main():
     assert not steep.reachable(0, 5)
     # cells only cover the lot, not the padding
     assert all(c[0] >= -17 / 0.3048 and c[2] <= 17 / 0.3048 for c in steep.cells("block")), "cells leak outside the lot"
+    # contours on a 30% plane: 30 m (98 ft) of lot gives ~9 ft... lines are straight, evenly spaced, elevations are multiples of the interval
+    c = steep.contours()
+    assert c["interval_ft"] in (2, 5, 10) and len(c["levels"]) >= 3, c["interval_ft"]
+    assert all(lv["ft"] % c["interval_ft"] == 0 for lv in c["levels"]) and any(lv["idx"] for lv in c["levels"])
+    gap = [b["ft"] - a["ft"] for a, b in zip(c["levels"], c["levels"][1:])]
+    assert len(set(gap)) == 1, gap
     print("terrain tests passed")
 
 

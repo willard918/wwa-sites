@@ -146,32 +146,41 @@ def cmd_csv(a):
 
 
 # ----------------------------------------------------------------------------- pieces
-def edge(*args, timeout=180):
-    return subprocess.run([EDGE, "--headless=new", "--disable-gpu-sandbox", "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--no-first-run", *args],
+def edge(*args, timeout=180):   # own Edge profile: a running Edge otherwise swallows the headless job
+    return subprocess.run([EDGE, "--headless=new", "--disable-gpu-sandbox", "--enable-unsafe-swiftshader", "--use-angle=swiftshader", "--no-first-run", "--user-data-dir=" + str(DATA / "edge-profile"), *args],
                           capture_output=True, text=True, timeout=timeout)
+
+
+def _recheck_one(job):
+    code, query = job
+    import server
+    err = "no result"
+    for attempt in range(2):
+        try:
+            res = server.lotcheck(query)
+            if res.get("ok"):
+                return code, res, None
+            err = res.get("error", "no result")
+        except Exception as e:
+            err = str(e)[:60]
+    return code, None, err
 
 
 def cmd_recheck(a):
     """Re-run the lot check (now with ground slope) on every stored letter. Entries that no longer qualify are marked `dropped`
     and are neither printed nor shown on the splash page. Writes the result back to letters.json (backup kept next to it)."""
     import server
-    from concurrent.futures import ThreadPoolExecutor
+    from concurrent.futures import ProcessPoolExecutor
     letters = load()
     LETTERS.with_name("letters.pre-recheck.json").write_text(json.dumps(letters), encoding="utf-8")
     todo = [c for c, v in letters.items() if not v.get("rechecked")]
     if a.limit:
         todo = todo[:a.limit]
 
-    def one(code):
-        v = letters[code]
-        try:
-            res = server.lotcheck(f"{v['address']}, {v['city']}, {v['state']} {v.get('zip') or ''}".strip())
-        except Exception as e:
-            return code, None, str(e)[:60]
-        return code, res, None
     done = 0
-    with ThreadPoolExecutor(max_workers=3) as ex:
-        for code, res, err in ex.map(one, todo):
+    jobs = [(c, f"{letters[c]['address']}, {letters[c]['city']}, {letters[c]['state']} {letters[c].get('zip') or ''}".strip()) for c in todo]
+    with ProcessPoolExecutor(max_workers=4) as ex:   # processes, not threads: the placement search is CPU-bound and time-capped, so threads sharing one core would starve it
+        for code, res, err in ex.map(_recheck_one, jobs):
             v = letters[code]
             if err or not res.get("ok") or not res.get("fit"):
                 v["dropped"] = "check failed: " + (err or res.get("error", "no fit data"))[:60]
@@ -247,7 +256,27 @@ def lot_svg(rec):
             x, y = c[0] - minx + pad, maxy - c[3] + pad
             d2 += f"M{x:.1f} {y:.1f}h{c[2] - c[0]:.1f}v{c[3] - c[1]:.1f}h-{c[2] - c[0]:.1f}z"
         if d2:
-            o.append(f'<path d="{d2}" fill="{col}" fill-opacity=".55" stroke="none" clip-path="url(#lotclip)"/>')
+            o.append(f'<path d="{d2}" fill="{col}" fill-opacity=".38" stroke="none" clip-path="url(#lotclip)"/>')
+    ct = (f.get("terrain") or {}).get("contours")
+    if ct:   # topographic contour lines (USGS 3DEP lidar): thin brown, every fifth line heavier with its elevation in feet
+        thin = thick = ""
+        labels = []
+        for lv in ct["levels"]:
+            d3 = ""
+            for x0, y0, x1, y1 in lv["segs"]:
+                d3 += f"M{x0 - minx + pad:.1f} {maxy - y0 + pad:.1f}L{x1 - minx + pad:.1f} {maxy - y1 + pad:.1f}"
+            if lv["idx"]:
+                thick += d3
+                x0, y0, x1, y1 = lv["segs"][len(lv["segs"]) // 2]
+                labels.append((lv["ft"], (x0 + x1) / 2 - minx + pad, maxy - (y0 + y1) / 2 + pad))
+            else:
+                thin += d3
+        if thin:
+            o.append(f'<path d="{thin}" fill="none" stroke="#9a7b55" stroke-width="{W / 800:.2f}" stroke-linecap="round"/>')
+        if thick:
+            o.append(f'<path d="{thick}" fill="none" stroke="#6e5232" stroke-width="{W / 420:.2f}" stroke-linecap="round"/>')
+        for ft, lx, ly in labels:
+            o.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="{W / 30:.1f}" font-family="Arial,sans-serif" fill="#4a3920" text-anchor="middle" stroke="#fff" stroke-width="{W / 150:.2f}" paint-order="stroke">{ft}</text>')
     for b in f.get("buildings") or []:   # existing buildings (satellite-derived footprints)
         o.append(f'<polygon points="{" ".join(P(q) for q in b)}" fill="#8f897b" stroke="#0b0a08" stroke-width="{W / 400:.2f}"/>')
     best = rec.get("best")
@@ -283,7 +312,7 @@ h1{font:400 27pt/1.04 Georgia,'Times New Roman',serif;letter-spacing:-.01em;marg
 .body{position:absolute;left:.9in;width:4.15in;top:4.55in;font-size:10.2pt;line-height:1.5}
 .body p{margin-bottom:.1in}
 .right{position:absolute;right:.9in;top:4.5in;width:2.3in}
-.lot{width:100%;height:2.45in;display:block;border:.6pt solid #cfc8b8;background:#fff}
+.lot{width:100%;height:2.15in;display:block;border:.6pt solid #cfc8b8;background:#fff}
 .cap{font-size:7pt;line-height:1.35;color:#7a7467;margin-top:.05in}
 .qr{position:absolute;left:3.75in;top:7.47in;width:4.1in;display:flex;gap:.16in;align-items:center}
 .qr svg{width:1.15in;height:1.15in;flex:none;margin:-.12in 0}.qr div{font-size:8pt;line-height:1.4;color:#3a372f}.qr b{display:block;font:400 11pt/1.2 Georgia,serif;color:#0b0a08;letter-spacing:.01em;margin-top:.03in;word-break:break-all}
@@ -335,7 +364,7 @@ def letter_html(code, rec, base, hero_uri):
 <p>I am an architect in Phoenix. I design small backyard homes built from factory panels. Out of curiosity, I looked up your property.</p>
 <p>{find}</p>
 <p>If a second home, a place for family or a rental has crossed your mind, scan the code to see your lot in 3D. No form, and no one will call. To talk, write or ring me.</p></div>
-<div class="right">{lot_svg(rec)}<div class="cap">Your lot (outline), the room left after setbacks and a {gap:g} ft gap from the buildings (light), the buildings now on it (grey) and a {E(best["model"]) if best else "unit"} placed on it (rust). Dashed edge: the street side, assumed. A first look from public records, not a survey.</div></div>
+<div class="right">{lot_svg(rec)}<div class="cap">Your lot (outline), the room left after setbacks and a {gap:g} ft gap from the buildings (light), the buildings now on it (grey) and a {E(best["model"]) if best else "unit"} placed on it (rust). Brown lines: ground contours every {(((rec.get("lot") or {}).get("terrain") or {}).get("contours") or {}).get("interval_ft", 5)} ft, from public lidar. Dashed edge: the street side, assumed. A first look from public records, not a survey.</div></div>
 <div class="sig"><i></i>Willard Williams, Architect<small>willardw@willardwilliamsarchitect.com<br>(425) 951-9459</small></div>
 <div class="qr">{qr_svg(url)}<div>Scan, or go to<br><b>{E(url.replace("https://", "").replace("http://", ""))}</b></div></div>
 <div class="fine">Planning figures only: setbacks are assumed, building outlines come from satellite data that can be out of date, and easements, utilities and your city's size limits are not checked. Nothing is built before we confirm the rules with your city or county. Construction work is by Trillium Design Build Company, Oregon CCB #257175. You will get this letter once. If you would rather not hear from us, do nothing.</div>

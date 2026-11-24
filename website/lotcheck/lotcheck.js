@@ -125,7 +125,7 @@ function drawPlan(host, f) {
   var s = svg("svg", { viewBox: "0 0 " + W.toFixed(1) + " " + H.toFixed(1), role: "img", "aria-label": "Lot plan with setback area and placed unit" });
   s.appendChild(svg("polygon", { points: poly(pts), fill: "#17140f", stroke: "#f1ece1", "stroke-width": (W / 300).toFixed(2) }));
   var T = f.terrain || {};
-  [["caution_cells", "rgba(214,170,60,.30)"], ["steep_cells", "rgba(190,60,50,.55)"]].forEach(function (g) {   /* ground slope: amber = needs earthwork, red = too steep to build */
+  [["caution_cells", "rgba(214,170,60,.22)"], ["steep_cells", "rgba(190,60,50,.38)"]].forEach(function (g) {   /* ground slope: amber = needs earthwork, red = too steep to build */
     var cells = T[g[0]]; if (!cells || !cells.length) return;
     var d2 = "";
     cells.forEach(function (c) {
@@ -134,6 +134,22 @@ function drawPlan(host, f) {
     });
     s.appendChild(svg("path", { d: d2, fill: g[1], stroke: "none", "clip-path": "" }));
   });
+  var CT = T.contours;
+  if (CT && CT.levels) {   /* topographic contour lines: thin brown, every fifth heavier and labelled with its elevation in feet */
+    var thin = "", thick = "", labs = [];
+    CT.levels.forEach(function (lv) {
+      var dpath = "";
+      lv.segs.forEach(function (g) { var a = P([g[0], g[1]]).split(","), b = P([g[2], g[3]]).split(","); dpath += "M" + a[0] + " " + a[1] + "L" + b[0] + " " + b[1]; });
+      if (lv.idx) { thick += dpath; var m = lv.segs[Math.floor(lv.segs.length / 2)], c = P([(m[0] + m[2]) / 2, (m[1] + m[3]) / 2]).split(","); labs.push([lv.ft, c[0], c[1]]); }
+      else thin += dpath;
+    });
+    if (thin) s.appendChild(svg("path", { d: thin, fill: "none", stroke: "rgba(196,160,112,.55)", "stroke-width": (W / 800).toFixed(2), "stroke-linecap": "round" }));
+    if (thick) s.appendChild(svg("path", { d: thick, fill: "none", stroke: "rgba(226,190,140,.9)", "stroke-width": (W / 420).toFixed(2), "stroke-linecap": "round" }));
+    labs.forEach(function (l) {
+      var t2 = svg("text", { x: l[1], y: l[2], "text-anchor": "middle", fill: "#e8cfa6", "font-size": (W / 30).toFixed(1), "font-family": "Inter,sans-serif", stroke: "#17140f", "stroke-width": (W / 150).toFixed(2), "paint-order": "stroke" });
+      t2.textContent = l[0]; s.appendChild(t2);
+    });
+  }
   if (f.envelope_cells && f.envelope_cells.length) {
     var dd = "";
     f.envelope_cells.forEach(function (c) {
@@ -172,7 +188,7 @@ function drawPlan(host, f) {
   host.appendChild(chips);
   if (first) pick(first[0], first[1]); else { unit.setAttribute("points", ""); }
   var leg = el("p", "lc-note", "Solid line: lot. Shaded: area left after assumed setbacks and a " + f.assumptions.building_clear_ft + "′ gap from buildings. Grey: existing buildings from satellite-derived footprints, which can be out of date." + (f.buildings_note ? " " + f.buildings_note : "") +
-    (T.checked ? " Red: ground steeper than " + T.block_pct + "% (not buildable for a prefab unit). Amber: 10 to " + T.block_pct + "% (needs earthwork). From USGS elevation data on a 10 ft grid; a survey is still needed." : (T.note ? " " + T.note : "")));
+    (T.checked ? " Brown lines are ground contours every " + ((CT && CT.interval_ft) || 5) + " ft (elevation in feet on the heavier ones). Red: ground steeper than " + T.block_pct + "% (not buildable for a prefab unit). Amber: 10 to " + T.block_pct + "% (needs earthwork). From USGS elevation data on a 10 ft grid; a survey is still needed." : (T.note ? " " + T.note : "")));
   host.appendChild(leg);
 }
 })();

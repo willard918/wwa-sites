@@ -197,3 +197,40 @@ class Terrain:
                                  round((self.x0 + (i - 0.5) * s) / FT, 1), round((self.y0 + (j + 0.5) * s) / FT, 1)])
                     start = None
         return runs
+
+    def contours(self):
+        """Topographic contour lines from the smoothed grid (marching squares). Interval adapts to the lot's relief:
+        2 ft on a flat lot, 5 ft on a sloping one, 10 ft on a steep one; every 5th line is an index line. Coordinates are feet, poly-local.
+        -> {"interval_ft": n, "levels": [{"ft": elevation above sea level, "idx": bool, "segs": [[x0, y0, x1, y1], ...]}]}"""
+        import geom
+        s, nx, ny, z = self.step, self.nx, self.ny, self.zs
+        lot_z = [z[j][i] for j in range(ny) for i in range(nx) if geom.point_in_poly((self.x0 + i * s, self.y0 + j * s), self.poly)] or [v for r in z for v in r]
+        relief = (max(lot_z) - min(lot_z)) / FT
+        interval = 2 if relief < 12 else 5 if relief < 50 else 10
+        zmin, zmax = min(v for r in z for v in r) / FT, max(v for r in z for v in r) / FT
+        out = []
+        lvl = math.ceil(zmin / interval) * interval
+        while lvl <= zmax:
+            L = lvl * FT
+            segs = []
+            for j in range(ny - 1):
+                for i in range(nx - 1):
+                    c = [z[j][i], z[j][i + 1], z[j + 1][i + 1], z[j + 1][i]]   # corners: bottom-left, bottom-right, top-right, top-left
+                    pts = []
+                    for a, b in ((0, 1), (1, 2), (2, 3), (3, 0)):   # edges
+                        va, vb = c[a], c[b]
+                        if (va < L) != (vb < L):
+                            t = (L - va) / (vb - va)
+                            xa, ya = (i + (0, 1, 1, 0)[a]), (j + (0, 0, 1, 1)[a])
+                            xb, yb = (i + (0, 1, 1, 0)[b]), (j + (0, 0, 1, 1)[b])
+                            pts.append((self.x0 + (xa + t * (xb - xa)) * s, self.y0 + (ya + t * (yb - ya)) * s))
+                    if len(pts) == 2:
+                        segs.append((pts[0], pts[1]))
+                    elif len(pts) == 4:   # saddle: pair by the centre value
+                        segs.append((pts[0], pts[1]) if sum(c) / 4 >= L else (pts[0], pts[3]))
+                        segs.append((pts[2], pts[3]) if sum(c) / 4 >= L else (pts[1], pts[2]))
+            if segs:
+                out.append({"ft": int(round(lvl)), "idx": int(round(lvl / interval)) % 5 == 0,
+                            "segs": [[round(a[0] / FT, 1), round(a[1] / FT, 1), round(b[0] / FT, 1), round(b[1] / FT, 1)] for a, b in segs]})
+            lvl += interval
+        return {"interval_ft": interval, "levels": out}
