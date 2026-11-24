@@ -198,6 +198,16 @@ class Terrain:
                     start = None
         return runs
 
+    def lot_stats(self):
+        """How the land lies under the lot itself: fall across it (ft) and median slope (%), from the smoothed grid, lot cells only."""
+        import geom
+        cells = [(i, j) for j in range(self.ny) for i in range(self.nx) if geom.point_in_poly((self.x0 + i * self.step, self.y0 + j * self.step), self.poly)]
+        if not cells:
+            return {}
+        zs = [self.zs[j][i] for i, j in cells]
+        sl = sorted(self.sl[j][i] for i, j in cells)
+        return {"relief_ft": round((max(zs) - min(zs)) / FT, 1), "median_slope_pct": round(sl[len(sl) // 2], 1), "steep_share": round(sum(1 for v in sl if v > THRESHOLDS["block_pct"]) / len(sl), 2)}
+
     def contours(self):
         """Topographic contour lines from the smoothed grid (marching squares). Interval adapts to the lot's relief:
         2 ft on a flat lot, 5 ft on a sloping one, 10 ft on a steep one; every 5th line is an index line. Coordinates are feet, poly-local.

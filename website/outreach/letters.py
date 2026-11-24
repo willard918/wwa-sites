@@ -73,7 +73,7 @@ def entry_from_check(res, addr, city, state, zipc, name=None, batch="draft"):
     terr = (fit or {}).get("terrain") or {}
     ground = next((r.get("ground") for r in results if best and r["model"] == best["model"]), None)
     return {"address": addr, "city": city, "state": state, "zip": zipc, "name": name, "batch": batch, "created": time.strftime("%Y-%m-%d"),
-            "terrain_ok": bool(terr.get("checked")), "slope_blocked": any(r.get("slope_blocked") for r in results), "slope_pct": ground["mean_slope_pct"] if ground else None,
+            "terrain_ok": bool(terr.get("checked")), "terrain_stats": terr.get("stats"), "slope_blocked": any(r.get("slope_blocked") for r in results), "slope_pct": ground["mean_slope_pct"] if ground else None,
             "verdict": v.get("headline"), "status": v.get("status"), "lot_sf": p.get("area_sf") if p else None,
             "best": {"model": best["model"], "size": best["size_ft"], "margin": best["margin_ft"]} if best else None,
             "lot": fit}
@@ -342,7 +342,15 @@ def letter_html(code, rec, base, hero_uri):
     best, sf = rec.get("best"), rec.get("lot_sf")
     gap = ((rec.get("lot") or {}).get("assumptions") or {}).get("building_clear_ft", 6)   # the gap the check actually used for this lot
     area = {"PL 384": 384, "PL 576": 576, "PL 768": 768}.get(best["model"]) if best else None
-    if best and sf:
+    fail = rec.get("kind") == "fail"
+    ts = rec.get("terrain_stats") or {}
+    if fail and sf:
+        if rec.get("fail_reason") == "steep":
+            why = f"The land falls about <b>{ts.get('relief_ft', 0):.0f} ft</b> across it (about <b>{ts.get('median_slope_pct', 0):.0f}%</b> slope), too steep for our panels and a truck and crane."
+        else:
+            why = "After setbacks and a safe gap from the buildings already on it, I cannot find room for our smallest, a 384 square foot studio."
+        find = (f"The county shows your lot at about <b>{money(sf)} square feet</b>. I would rather be straight than waste your time: it does not qualify for one of our homes. {why}")
+    elif best and sf:
         find = (f"The county shows your lot at about <b>{money(sf)} square feet</b>. Using the state's rules, cautious setbacks and the buildings already on the lot, "
                 f"a <b>{area} square foot</b> backyard home looks like it could fit. "
                 f"The drawing shows where. It is an estimate from public records."
@@ -356,15 +364,29 @@ def letter_html(code, rec, base, hero_uri):
     if best and rent:   # sourced, not promised: the Census median for the neighbourhood, per year, before costs
         find += (f" Typical rent in your area is about <b>${money(int(rent))} a month</b> (Census), so a backyard home might bring in roughly <b>${money(int(round(rent * 12, -2)))} a year</b>, before costs.")
     url = f"{base}/l/{code}"
+    intro = ("I am an architect in Phoenix. I design small backyard homes built from factory panels, and I looked up your property." if fail else
+             "I am an architect in Phoenix. I design small backyard homes built from factory panels. Out of curiosity, I looked up your property.")
+    if fail:
+        closing = ("If a friend has a flatter yard, or you have another need (a remodel, an addition, a shop, a design for a slope), I would be glad to help. "
+                   "Scan the code for what we found. No form, and no one will call.")
+    else:
+        closing = "If a second home, a place for family or a rental has crossed your mind, scan the code to see your lot in 3D. No form, and no one will call. To talk, write or ring me."
+    ctr = (((rec.get("lot") or {}).get("terrain") or {}).get("contours") or {}).get("interval_ft", 5)
+    if fail and rec.get("fail_reason") == "steep":
+        cap = f"Your lot (outline), the buildings now on it (grey), ground contours every {ctr} ft (brown) and the ground too steep for our panels (red), from public lidar. A first look from public records, not a survey."
+    elif fail:
+        cap = f"Your lot (outline), the room left after setbacks and a {gap:g} ft gap from the buildings (light), the buildings now on it (grey) and ground contours every {ctr} ft (brown). A first look from public records, not a survey."
+    else:
+        cap = f"""Your lot (outline), the room left after setbacks and a {gap:g} ft gap from the buildings (light), the buildings now on it (grey) and a {E(best["model"]) if best else "unit"} placed on it (rust). Brown lines: ground contours every {(((rec.get("lot") or {}).get("terrain") or {}).get("contours") or {}).get("interval_ft", 5)} ft, from public lidar. Dashed edge: the street side, assumed. A first look from public records, not a survey."""
     return f"""<section class="page">
 <div class="lh"><b>Willard Williams Architect</b><span>Phoenix, Oregon</span></div>
 <div class="to">{who}<br>{addr_line}</div>
 <div class="hl"><h1>We looked at {E(street)}.<br>Here is what we found.</h1></div>
 <div class="body"><p>{sal}</p>
-<p>I am an architect in Phoenix. I design small backyard homes built from factory panels. Out of curiosity, I looked up your property.</p>
+<p>{intro}</p>
 <p>{find}</p>
-<p>If a second home, a place for family or a rental has crossed your mind, scan the code to see your lot in 3D. No form, and no one will call. To talk, write or ring me.</p></div>
-<div class="right">{lot_svg(rec)}<div class="cap">Your lot (outline), the room left after setbacks and a {gap:g} ft gap from the buildings (light), the buildings now on it (grey) and a {E(best["model"]) if best else "unit"} placed on it (rust). Brown lines: ground contours every {(((rec.get("lot") or {}).get("terrain") or {}).get("contours") or {}).get("interval_ft", 5)} ft, from public lidar. Dashed edge: the street side, assumed. A first look from public records, not a survey.</div></div>
+<p>{closing}</p></div>
+<div class="right">{lot_svg(rec)}<div class="cap">{cap}</div></div>
 <div class="sig"><i></i>Willard Williams, Architect<small>willardw@willardwilliamsarchitect.com<br>(425) 951-9459</small></div>
 <div class="qr">{qr_svg(url)}<div>Scan, or go to<br><b>{E(url.replace("https://", "").replace("http://", ""))}</b></div></div>
 <div class="fine">Planning figures only: setbacks are assumed, building outlines come from satellite data that can be out of date, and easements, utilities and your city's size limits are not checked. Nothing is built before we confirm the rules with your city or county. Construction work is by Trillium Design Build Company, Oregon CCB #257175. You will get this letter once. If you would rather not hear from us, do nothing.</div>
@@ -392,7 +414,7 @@ def cmd_build(a):
         for c in codes:
             v = letters[c]
             w.writerow([c, v.get("name") or "Current Resident", v["address"], v["city"], v["state"], v["zip"], f"{a.base.rstrip('/')}/l/{c}", v.get("lot_sf") or "", (v.get("best") or {}).get("model", ""), v.get("batch")])
-    pdf = OUT / "letters.pdf"
+    pdf = OUT / (a.pdf or "letters.pdf")
     r = edge("--virtual-time-budget=20000", "--no-pdf-header-footer", f"--print-to-pdf={pdf}", f.as_uri(), timeout=600)
     print(len(codes), "letters ->", pdf, f"{pdf.stat().st_size // 1024} KB" if pdf.exists() else "FAILED " + r.stderr[-300:])
     if a.proof:
@@ -410,6 +432,6 @@ if __name__ == "__main__":
     x = sp.add_parser("csv"); x.add_argument("file"); x.add_argument("--batch", default="csv-1")
     sp.add_parser("hero")
     rc = sp.add_parser("recheck"); rc.add_argument("--limit", type=int)
-    b = sp.add_parser("build"); b.add_argument("--base", default="https://willardwilliamsarchitect.com"); b.add_argument("--limit", type=int); b.add_argument("--batch"); b.add_argument("--proof", action="store_true"); b.add_argument("--letters", help="read a different letters.json (for proofs)")
+    b = sp.add_parser("build"); b.add_argument("--base", default="https://willardwilliamsarchitect.com"); b.add_argument("--limit", type=int); b.add_argument("--batch"); b.add_argument("--proof", action="store_true"); b.add_argument("--pdf", help="output file name inside data/letters (default letters.pdf)"); b.add_argument("--letters", help="read a different letters.json (for proofs)")
     a = ap.parse_args()
     {"candidates": cmd_candidates, "csv": cmd_csv, "hero": cmd_hero, "build": cmd_build, "recheck": cmd_recheck}[a.cmd](a)

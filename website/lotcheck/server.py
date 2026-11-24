@@ -547,7 +547,7 @@ def lotcheck(address):
             "ref": {"lon0": lon0, "lat0": lat0, "cx": cx, "cy": cy},   # lets a QA script put the local plan back on a map
             "terrain": ({"checked": True, "block_pct": terrain_mod.THRESHOLDS["block_pct"], "access_pct": terrain_mod.THRESHOLDS["access_pct"],
                          "steep_cells": terrain.cells("block"), "caution_cells": terrain.cells("caution"),
-                         "route_checked": terrain.reach is not None, "contours": terrain.contours(),
+                         "route_checked": terrain.reach is not None, "contours": terrain.contours(), "stats": terrain.lot_stats(),
                          "source": "USGS 3DEP elevation, about 10 ft grid, smoothed"} if terrain is not None else {"checked": False, "note": tnote}),
             "results": results, "lot": [pt_ft(p) for p in poly], "envelope_cells": [[round(v * M2FT, 1) for v in c] for c in cells],
             "front_edge": [pt_ft(front_edge[0]), pt_ft(front_edge[1])] if front_edge else None,

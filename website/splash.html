@@ -129,7 +129,7 @@ footer .wrap{display:grid;gap:10px}
   <div class="wrap">
     <div class="eyebrow rise" id="sp-eye">Prefabricated ADUs &middot; Oregon &middot; Washington &middot; California</div>
     <h1 class="rise d2" id="sp-h1">Precision,<br>at home.</h1>
-    <p class="sub rise d3" style="margin-bottom:6px;color:#f1ece1">Rent it out. House family. Work from home.</p>
+    <p class="sub rise d3" id="sp-uses" style="margin-bottom:6px;color:#f1ece1">Rent it out. House family. Work from home.</p>
     <p class="sub rise d3" id="sp-sub">Tell us where you want to build and we'll tell you what's possible.</p>
     <div class="row rise d3" id="sp-cta"></div>
     <form class="check rise d3" id="lotform" style="margin-top:6px">
@@ -158,9 +158,9 @@ footer .wrap{display:grid;gap:10px}
 
 <section id="keep"><div class="wrap keep">
   <div>
-    <div class="eyebrow">Next</div>
-    <h2>Keep it. Or ask me anything.</h2>
-    <p class="lead">There is no price tag here on purpose: a fair number depends on your site, and I would rather give you a real one. Reply to the email we send, or reach me directly.</p>
+    <div class="eyebrow" id="keep-eye">Next</div>
+    <h2 id="keep-h">Keep it. Or ask me anything.</h2>
+    <p class="lead" id="keep-p">There is no price tag here on purpose: a fair number depends on your site, and I would rather give you a real one. Reply to the email we send, or reach me directly.</p>
     <div class="reach"><a class="btn" href="mailto:contact@pacificlivingsolutions.com?subject=Lot%20review">Email me</a><a class="btn ghost" href="tel:+14259519459">(425) 951-9459</a></div>
   </div>
   <div id="sp-tz"></div>
@@ -1586,6 +1586,32 @@ function drawPlan(host, f) {
   function poly(arr) { return arr.map(P).join(" "); }
   var s = svg("svg", { viewBox: "0 0 " + W.toFixed(1) + " " + H.toFixed(1), role: "img", "aria-label": "Lot plan with setback area and placed unit" });
   s.appendChild(svg("polygon", { points: poly(pts), fill: "#17140f", stroke: "#f1ece1", "stroke-width": (W / 300).toFixed(2) }));
+  var T = f.terrain || {};
+  [["caution_cells", "rgba(214,170,60,.22)"], ["steep_cells", "rgba(190,60,50,.38)"]].forEach(function (g) {   /* ground slope: amber = needs earthwork, red = too steep to build */
+    var cells = T[g[0]]; if (!cells || !cells.length) return;
+    var d2 = "";
+    cells.forEach(function (c) {
+      var a = P([c[0], c[3]]).split(","), w = (c[2] - c[0]).toFixed(1), h = (c[3] - c[1]).toFixed(1);
+      d2 += "M" + a[0] + " " + a[1] + "h" + w + "v" + h + "h-" + w + "z";
+    });
+    s.appendChild(svg("path", { d: d2, fill: g[1], stroke: "none", "clip-path": "" }));
+  });
+  var CT = T.contours;
+  if (CT && CT.levels) {   /* topographic contour lines: thin brown, every fifth heavier and labelled with its elevation in feet */
+    var thin = "", thick = "", labs = [];
+    CT.levels.forEach(function (lv) {
+      var dpath = "";
+      lv.segs.forEach(function (g) { var a = P([g[0], g[1]]).split(","), b = P([g[2], g[3]]).split(","); dpath += "M" + a[0] + " " + a[1] + "L" + b[0] + " " + b[1]; });
+      if (lv.idx) { thick += dpath; var m = lv.segs[Math.floor(lv.segs.length / 2)], c = P([(m[0] + m[2]) / 2, (m[1] + m[3]) / 2]).split(","); labs.push([lv.ft, c[0], c[1]]); }
+      else thin += dpath;
+    });
+    if (thin) s.appendChild(svg("path", { d: thin, fill: "none", stroke: "rgba(196,160,112,.55)", "stroke-width": (W / 800).toFixed(2), "stroke-linecap": "round" }));
+    if (thick) s.appendChild(svg("path", { d: thick, fill: "none", stroke: "rgba(226,190,140,.9)", "stroke-width": (W / 420).toFixed(2), "stroke-linecap": "round" }));
+    labs.forEach(function (l) {
+      var t2 = svg("text", { x: l[1], y: l[2], "text-anchor": "middle", fill: "#e8cfa6", "font-size": (W / 30).toFixed(1), "font-family": "Inter,sans-serif", stroke: "#17140f", "stroke-width": (W / 150).toFixed(2), "paint-order": "stroke" });
+      t2.textContent = l[0]; s.appendChild(t2);
+    });
+  }
   if (f.envelope_cells && f.envelope_cells.length) {
     var dd = "";
     f.envelope_cells.forEach(function (c) {
@@ -1623,7 +1649,8 @@ function drawPlan(host, f) {
   });
   host.appendChild(chips);
   if (first) pick(first[0], first[1]); else { unit.setAttribute("points", ""); }
-  var leg = el("p", "lc-note", "Solid line: lot. Shaded: area left after assumed setbacks and a " + f.assumptions.building_clear_ft + "′ gap from buildings. Grey: existing buildings from satellite-derived footprints, which can be out of date." + (f.buildings_note ? " " + f.buildings_note : ""));
+  var leg = el("p", "lc-note", "Solid line: lot. Shaded: area left after assumed setbacks and a " + f.assumptions.building_clear_ft + "′ gap from buildings. Grey: existing buildings from satellite-derived footprints, which can be out of date." + (f.buildings_note ? " " + f.buildings_note : "") +
+    (T.checked ? " Brown lines are ground contours every " + ((CT && CT.interval_ft) || 5) + " ft (elevation in feet on the heavier ones). Red: ground steeper than " + T.block_pct + "% (not buildable for a prefab unit). Amber: 10 to " + T.block_pct + "% (needs earthwork). From USGS elevation data on a 10 ft grid; a survey is still needed." : (T.note ? " " + T.note : "")));
   host.appendChild(leg);
 }
 })();
@@ -1644,9 +1671,15 @@ function drawPlan(host, f) {
   if(L){
     var street=L.address;
     $("sp-eye").textContent="A letter from Willard Williams, Architect";
-    $("sp-h1").innerHTML=esc(street)+(L.best?"<br>has room.":"<br>Let&rsquo;s look.");
+    var FAIL=L.kind==="fail";
+    $("sp-h1").innerHTML=esc(street)+(FAIL?"<br>doesn&rsquo;t qualify.":L.best?"<br>has room.":"<br>Let&rsquo;s look.");
     $("sp-sub").textContent=L.best&&L.sf?"The county shows about "+num(L.sf)+" sq ft. A "+sf(L.best.model)+" sq ft backyard home looks like it could fit. It is an estimate from public records, and a visit would settle it.":"We looked at your lot. Here is what the public record shows.";
-    $("sp-cta").innerHTML='<a class="btn" href="#lot">See your lot</a><a class="btn ghost" href="#homes">See the homes</a>';
+    if(FAIL){
+      var ts=(L.lot&&L.lot.terrain&&L.lot.terrain.stats)||{};
+      $("sp-sub").textContent=(L.fail_reason==="steep"?"The ground falls about "+Math.round(ts.relief_ft||0)+" ft across this lot, too steep for our factory panels and a truck and crane to reach. ":"After setbacks and a safe gap from the buildings already here, I cannot find room for even our smallest home. ")+"I would rather tell you now than waste your time.";
+      $("sp-cta").innerHTML='<a class="btn" href="#lot">See what we found</a><a class="btn ghost" href="#keep">Other ways I can help</a>';
+      var hs=document.getElementById("homes");if(hs)hs.style.display="none";var us=document.getElementById("sp-uses");if(us)us.style.display="none";
+    }else $("sp-cta").innerHTML='<a class="btn" href="#lot">See your lot</a><a class="btn ghost" href="#homes">See the homes</a>';
     $("addr").value=full;$("lotform").style.display="none";
     window.LASTLOT={match:{address:full}};
     document.title=street+" | Willard Williams Architect";
@@ -1701,11 +1734,15 @@ function drawPlan(host, f) {
     pick=n;[].forEach.call(document.querySelectorAll(".unit"),function(b){b.setAttribute("aria-pressed",String(b.dataset.n===n))});
     if(stage){stage.show(params(A.MODELS[n]),{finish:"charcoal",dusk:true});var cv=$("sp-stage"),asp=(cv.clientWidth||1)/(cv.clientHeight||1),m=A.MODELS[n];
       stage.orbit.r=(Math.max(m.width,m.depth)*2.6+12)*Math.min(2.2,Math.max(1,Math.pow(1.3/asp,.6)));stage.draw()}
-    mountTease(n);
+    if(!(L&&L.kind==="fail"))mountTease(n);
   }
   try{stage=A.Stage($("sp-stage"),{interactive:true,keepZoom:true,fov:32});stage.orbit.az=-0.95;stage.orbit.el=0.16;
     if("IntersectionObserver" in window&&!matchMedia("(prefers-reduced-motion: reduce)").matches)new IntersectionObserver(function(es){stage.spin(es[0].isIntersecting)},{threshold:.3}).observe($("sp-stage"));
   }catch(e){console.warn("stage failed",e)}
+  if(L&&L.kind==="fail"){
+    $("keep-eye").textContent="Something else?";$("keep-h").textContent="A friend, or another need.";
+    $("keep-p").textContent="If a friend, neighbor or family member has a flatter yard and has thought about a backyard home, I would be glad to look at theirs. And if you have something else in mind, a remodel, an addition, a shop or barn, or a design made for a sloping site, that is what an architect is for. No form, and no one will call.";
+  }
   choose(pick);
 })();
 </script>

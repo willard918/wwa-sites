@@ -202,6 +202,57 @@ def score(ent):
             - 1.0 * (ground.get("relief_ft") or 0) + min(ent.get("lot_sf") or 0, 12000) / 600.0)
 
 
+def pick_fails(recs, n, held):
+    """~10% of the batch are honest 'does not qualify' letters: half on steep ground (the contour map makes the case), half too tight
+    (no unit fits after setbacks and buildings). Each candidate is re-run with the current check so the letter quotes real numbers, and is
+    kept only if the story is clear. Spread across towns. Returns [(reason, entry)]."""
+    import letters
+    steep_pool, tight_pool = [], []
+    for r in recs:
+        e = r.get("entry")
+        if not e or e["address"].upper() in held or not e["terrain_ok"] or e["best"]:
+            continue
+        lot = e.get("lot") or {}
+        if not lot.get("buildings") or not (lot.get("terrain") or {}).get("route_checked") or (e.get("lot_sf") or 0) < 5500:
+            continue
+        res = lot.get("results") or []
+        if e["slope_blocked"]:
+            steep_pool.append(r)
+        elif res and not any(x["fits"] for x in res) and (e.get("lot_sf") or 0) < 14000:
+            tight_pool.append(r)
+    steep_pool.sort(key=lambda r: -(r.get("pre") or 0))   # the steepest first: the clearest hillsides
+    tight_pool.sort(key=lambda r: -(r["entry"].get("lot_sf") or 0))   # the biggest lots that still fail: least obviously "no room" on paper
+    out, want = [], {"steep": n // 2, "tight": n - n // 2}
+    by_city = {}
+    towns = ["Medford", "Ashland", "Talent", "Phoenix"]
+    for reason, pool in (("steep", steep_pool), ("tight", tight_pool)):
+        got, i = 0, 0
+        queues = {c: [r for r in pool if r["entry"]["city"] == c] for c in towns}
+        tried = 0
+        while got < want[reason] and tried < 120 and any(queues.values()):
+            c = towns[i % 4]; i += 1
+            if not queues[c]:
+                continue
+            r = queues[c].pop(0)
+            tried += 1
+            _pid, res, err = _check_one((r["id"], f"{r['addr'].title()}, {r['city'].title()}, OR"))   # fresh result with terrain stats and contours
+            if err or not res.get("fit"):
+                continue
+            z = (res["match"]["address"].split(",")[-1] or "").strip().split()[-1]
+            ent = letters.entry_from_check(res, letters.titlecase_street(r["addr"]), r["city"].title(), "OR", z if z.isdigit() else "", batch=BATCH)
+            st = ent.get("terrain_stats") or {}
+            if ent["best"] or not ent["terrain_ok"]:
+                continue
+            if reason == "steep" and not (ent["slope_blocked"] and st.get("relief_ft", 0) >= 25 and st.get("median_slope_pct", 0) >= 12):
+                continue
+            if reason == "tight" and (ent["slope_blocked"] or st.get("median_slope_pct", 99) > 10 or any(x["fits"] for x in ent["lot"]["results"])):
+                continue
+            ent["kind"], ent["fail_reason"] = "fail", reason
+            out.append((reason, ent)); got += 1
+            print(f"  fail letter {reason}: {ent['address']}, {ent['city']} (fall {st.get('relief_ft')} ft, median slope {st.get('median_slope_pct')}%)", flush=True)
+    return out
+
+
 def cmd_pick(a):
     import letters
     recs = [json.loads(line) for line in (DATA / "checked.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -234,24 +285,29 @@ def cmd_pick(a):
     ok.sort(key=lambda t: -t[0])
     print(f"{len(recs)} checked; {len(ok)} qualify; rejected: {why}")
     if a.mix:   # best by score, but with ceilings so the 200 are not all one unit size or one town
-        model_cap = {"PL 768": int(a.top * 0.40), "PL 576": int(a.top * 0.35), "PL 384": int(a.top * 0.35)}
-        city_cap = {"Medford": int(a.top * 0.50), "Ashland": int(a.top * 0.28), "Talent": int(a.top * 0.18), "Phoenix": int(a.top * 0.18)}
+        n_main = a.top - a.fails   # the rest of the batch are the 'does not qualify' letters
+        model_cap = {"PL 768": int(n_main * 0.40), "PL 576": int(n_main * 0.35), "PL 384": int(n_main * 0.35)}
+        city_cap = {"Medford": int(n_main * 0.50), "Ashland": int(n_main * 0.28), "Talent": int(n_main * 0.18), "Phoenix": int(n_main * 0.18)}
         mc, cc, top, rest = {}, {}, [], []
         for item in ok:
             e = item[1]["entry"]
             m, c = e["best"]["model"], e["city"]
-            if mc.get(m, 0) < model_cap.get(m, 0) and cc.get(c, 0) < city_cap.get(c, 0) and len(top) < a.top:
+            if mc.get(m, 0) < model_cap.get(m, 0) and cc.get(c, 0) < city_cap.get(c, 0) and len(top) < n_main:
                 top.append(item); mc[m] = mc.get(m, 0) + 1; cc[c] = cc.get(c, 0) + 1
             else:
                 rest.append(item)
         for item in rest:   # ceilings can leave gaps; fill them with the next best
-            if len(top) >= a.top:
+            if len(top) >= n_main:
                 break
             top.append(item)
         top.sort(key=lambda t: -t[0])
     else:
         top = ok[:a.top]
-    if len(top) < a.top:
+    fails = []
+    if a.fails:
+        top = top[:a.top - a.fails]
+        fails = pick_fails(recs, a.fails, held)
+    if len(top) + a.fails < a.top:
         print(f"only {len(top)} qualify: run `check --n` with a larger number")
     everything = letters.load()
     for code in [c for c, v in everything.items() if v.get("batch") == BATCH]:
@@ -260,6 +316,8 @@ def cmd_pick(a):
         code = letters.new_code(everything)
         r["entry"]["rank_score"] = round(s, 1)
         everything[code] = r["entry"]
+    for reason, ent in fails:
+        everything[letters.new_code(everything)] = ent
     letters.save(everything)
     models = {}
     for s, r in top:
@@ -278,6 +336,7 @@ def main():
     ap.add_argument("--n", type=int, default=900)
     ap.add_argument("--top", type=int, default=200)
     ap.add_argument("--max-slope", type=float, default=14.0)
+    ap.add_argument("--fails", type=int, default=0, help="pick: how many of the --top letters are honest 'does not qualify' letters (about 10%%)")
     ap.add_argument("--strata", action="store_true", help="check: a spread across towns and lot sizes instead of the top of the proxy ranking")
     ap.add_argument("--mix", action="store_true", help="pick: cap each unit size and town so the list has variety")
     a = ap.parse_args()
