@@ -143,9 +143,29 @@ def promising(max_slope):
     return [p for _, p in rows], pre
 
 
+def stratified(max_slope, quotas, seed=11):
+    """A spread of lots instead of just the biggest: a random sample per town, and for Medford the mid-sized lots
+    (0.17-0.4 acre) where the smaller units are the natural fit. quotas: {city: n}."""
+    import random
+    rnd = random.Random(seed)
+    pool = json.loads((DATA / "pool.json").read_text(encoding="utf-8"))
+    pre = json.loads((DATA / "prescreen.json").read_text(encoding="utf-8"))
+    out = []
+    for city, n in quotas.items():
+        rows = [p for p in pool if p["city"] == city and pre.get(p["id"]) is not None and pre[p["id"]] <= max_slope
+                and (city != "MEDFORD" or (p.get("acres") or 0) <= 0.4)]
+        rnd.shuffle(rows)
+        out += rows[:n]
+    return out, pre
+
+
 def cmd_check(a):
     import letters
-    rows, pre = promising(a.max_slope)
+    if a.strata:
+        rows, pre = stratified(a.max_slope, {"ASHLAND": 300, "TALENT": 200, "PHOENIX": 200, "MEDFORD": 300})
+        a.n = len(rows)
+    else:
+        rows, pre = promising(a.max_slope)
     out_f = DATA / "checked.jsonl"
     seen = set()
     if out_f.exists():
@@ -213,7 +233,24 @@ def cmd_pick(a):
             ok.append((score(e), r))
     ok.sort(key=lambda t: -t[0])
     print(f"{len(recs)} checked; {len(ok)} qualify; rejected: {why}")
-    top = ok[:a.top]
+    if a.mix:   # best by score, but with ceilings so the 200 are not all one unit size or one town
+        model_cap = {"PL 768": int(a.top * 0.40), "PL 576": int(a.top * 0.35), "PL 384": int(a.top * 0.35)}
+        city_cap = {"Medford": int(a.top * 0.50), "Ashland": int(a.top * 0.28), "Talent": int(a.top * 0.18), "Phoenix": int(a.top * 0.18)}
+        mc, cc, top, rest = {}, {}, [], []
+        for item in ok:
+            e = item[1]["entry"]
+            m, c = e["best"]["model"], e["city"]
+            if mc.get(m, 0) < model_cap.get(m, 0) and cc.get(c, 0) < city_cap.get(c, 0) and len(top) < a.top:
+                top.append(item); mc[m] = mc.get(m, 0) + 1; cc[c] = cc.get(c, 0) + 1
+            else:
+                rest.append(item)
+        for item in rest:   # ceilings can leave gaps; fill them with the next best
+            if len(top) >= a.top:
+                break
+            top.append(item)
+        top.sort(key=lambda t: -t[0])
+    else:
+        top = ok[:a.top]
     if len(top) < a.top:
         print(f"only {len(top)} qualify: run `check --n` with a larger number")
     everything = letters.load()
@@ -229,7 +266,10 @@ def cmd_pick(a):
         m = r["entry"]["best"]["model"]
         models[m] = models.get(m, 0) + 1
     if top:
-        print(f"wrote {len(top)} letters (batch {BATCH}): {models}; score {top[-1][0]:.1f} to {top[0][0]:.1f}")
+        towns = {}
+        for s_, r in top:
+            towns[r["entry"]["city"]] = towns.get(r["entry"]["city"], 0) + 1
+        print(f"wrote {len(top)} letters (batch {BATCH}): {models}; {towns}; score {top[-1][0]:.1f} to {top[0][0]:.1f}")
 
 
 def main():
@@ -238,6 +278,8 @@ def main():
     ap.add_argument("--n", type=int, default=900)
     ap.add_argument("--top", type=int, default=200)
     ap.add_argument("--max-slope", type=float, default=14.0)
+    ap.add_argument("--strata", action="store_true", help="check: a spread across towns and lot sizes instead of the top of the proxy ranking")
+    ap.add_argument("--mix", action="store_true", help="pick: cap each unit size and town so the list has variety")
     a = ap.parse_args()
     for st in (["pool", "prescreen", "check", "pick"] if a.stage == "all" else [a.stage]):
         print(f"== {st}", flush=True)
